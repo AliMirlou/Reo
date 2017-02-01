@@ -21,6 +21,7 @@ target  : 'Java' ;
 block   : ID? '{' stmt* '}' ;
 stmt    : expr '=' expr                                          # stmt_equation
         | var rsys                                               # stmt_compdefn
+        | 'struct' ID '{' param (',' param)* '}'                 # stmt_struct
         | comp                                                   # stmt_instance
         | block                                                  # stmt_block
         | 'for' ID '=' intr '..' intr block                      # stmt_iteration
@@ -49,7 +50,12 @@ strg    : STRING                                                 # strg_string
 
 // Floating point expressions
 fltp    : DEC                                                    # fltp_natural
-        | var                                                    # fltp_variable ;
+        | var                                                    # fltp_variable
+        | '(' fltp ')'                                           # fltp_brackets
+        | <assoc=right> fltp POW fltp                            # fltp_exponent
+        | MIN fltp                                               # fltp_unarymin
+        | fltp op=(MUL | DIV) fltp                               # fltp_multdivrem
+        | fltp op=(ADD | MIN) fltp                               # fltp_addsub ;
 
 // Boolean expressions
 bool    : BOOL                                                   # bool_boolean

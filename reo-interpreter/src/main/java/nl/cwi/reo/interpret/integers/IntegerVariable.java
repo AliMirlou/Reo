@@ -4,26 +4,27 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.semantics.api.IntegerExpression;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 
 public class IntegerVariable implements IntegerExpression {
 	
 	/**
 	 * Variable name.
 	 */
-	private Variable var;
+	private VariableExpression var;
 	
 	/**
 	 * Constructs a natural number from a string.
 	 * @param s 	string representation of a natural number
 	 */
-	public IntegerVariable(Variable var) {
+	public IntegerVariable(VariableExpression var) {
 		if (var == null)
 			throw new NullPointerException();
 		this.var = var;
 	}
 	
-	public Variable getVariable() {
+	public VariableExpression getVariable() {
 		return var;
 	}
 
@@ -37,8 +38,8 @@ public class IntegerVariable implements IntegerExpression {
 		Expression e = var.evaluate(params);
 		if (e instanceof IntegerExpression) {
 			return (IntegerExpression)e;
-		} else if (e instanceof Variable) {
-			return new IntegerVariable((Variable)e);
+		} else if (e instanceof VariableExpression) {
+			return new IntegerVariable((VariableExpression)e);
 		} 
 		return this;	
 	}

@@ -6,14 +6,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.stringtemplate.v4.ST;
+
+import nl.cwi.reo.semantics.api.Evaluable;
+import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Port;
 
 import java.util.HashMap;
@@ -24,7 +31,7 @@ import java.util.HashSet;
  * a generic label of type L. If the transition label type L is immutable, then Automaton<L> 
  * is immutable too.
  */
-public class Automaton<L extends Label<L>> {
+public class Automaton<L extends Label<L>> implements Evaluable<Automaton<L>> {
 
 	/**
 	 * Set of states
@@ -32,14 +39,14 @@ public class Automaton<L extends Label<L>> {
 	protected final SortedSet<State> states;
 
 	/**
-	 * Set of ports
+	 * Ordered set of ports
 	 */
-	protected final SortedSet<Port> iface;
+	protected final Set<Port> iface;
 
 	/**
 	 * List of outgoing transitions.
 	 */
-	protected final Map<State, Set<Transition<L>>> out;
+	protected final SortedMap<State, Set<Transition<L>>> out;
 
 	/**
 	 * Initial state.
@@ -64,11 +71,11 @@ public class Automaton<L extends Label<L>> {
 		states.add(initial);
 		this.states = Collections.unmodifiableSortedSet(states);
 		
-		this.iface = Collections.unmodifiableSortedSet(new TreeSet<Port>());
+		this.iface = Collections.unmodifiableSet(new LinkedHashSet<Port>());
 		
-		Map<State, Set<Transition<L>>> out = new HashMap<State, Set<Transition<L>>>();
+		SortedMap<State, Set<Transition<L>>> out = new TreeMap<State, Set<Transition<L>>>();
 		out.put(initial, Collections.unmodifiableSet(new HashSet<Transition<L>>()));
-		this.out = Collections.unmodifiableMap(out);
+		this.out = Collections.unmodifiableSortedMap(out);
 		
 		this.lbl = lbl;
 	}
@@ -83,7 +90,7 @@ public class Automaton<L extends Label<L>> {
 	 * @param type 	type of semantics
 	 * @param lbl 	instance of a label
 	 */
-	public Automaton(SortedSet<State> Q, SortedSet<Port> P, Map<State, Set<Transition<L>>> T, State q0, L lbl) {
+	public Automaton(SortedSet<State> Q, Set<Port> P, Map<State, Set<Transition<L>>> T, State q0, L lbl) {
 		if (Q == null)
 			throw new NullPointerException("No set of states specified.");	
 		if (P == null)
@@ -102,12 +109,12 @@ public class Automaton<L extends Label<L>> {
 		
 		this.iface = Collections.unmodifiableSortedSet(new TreeSet<Port>(P));
 		
-		Map<State, Set<Transition<L>>> out = new HashMap<State, Set<Transition<L>>>();
+		SortedMap<State, Set<Transition<L>>> out = new TreeMap<State, Set<Transition<L>>>();
 		for (Map.Entry<State, Set<Transition<L>>> entry : T.entrySet())
 			out.put(entry.getKey(), Collections.unmodifiableSet(new HashSet<Transition<L>>(entry.getValue())));
 		if (out.get(initial) == null)
 			out.put(initial, Collections.unmodifiableSet(new HashSet<Transition<L>>()));
-		this.out = Collections.unmodifiableMap(out);
+		this.out = Collections.unmodifiableSortedMap(out);
 		
 		this.lbl = lbl;
 	}
@@ -124,7 +131,7 @@ public class Automaton<L extends Label<L>> {
 	 * Gets the interface of this automaton.
 	 * @return set of names.
 	 */
-	public SortedSet<Port> getInterface() {
+	public Set<Port> getInterface() {
 		return this.iface;
 	}
 
@@ -284,25 +291,37 @@ public class Automaton<L extends Label<L>> {
 		return new Automaton<L>(Q, P, T, initial, lbl);
 	}
 	
+
+	
 	/**
-	 * Gets the string representation of this automaton in .dot format.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		StringBuilder str = new StringBuilder();
-
-		str.append("Interface " + iface + "; initial state "+ initial + "\n");
-		for (State q : this.states) {
-			for (Transition<L> t : this.out.get(q)) {
-				State q1 = t.getSource();
-				State q2 = t.getTarget();
-				String sc = t.getSyncConstraint().toString();
-				L lb = t.getLabel();
-				str.append("\t" + q1 + " -> "+ q2 + " : " + sc + ", " + lb + "\n");
-			}
-		}
-		 
-		return str.toString();
+		ST st = new ST("`<`<interface>{\n  <transitions; separator=\"\n\">\n}");
+				
+		List<Transition<L>> transitions = new ArrayList<Transition<L>>();
+		for (State q : this.states) 
+			for (Transition<L> t : this.out.get(q)) 
+				transitions.add(t);
+		
+		st.add("interface", this.iface);
+		st.add("transitions", transitions);
+		return st.render();
+//		StringBuilder str = new StringBuilder();
+//
+//		str.append("Interface " + iface + "; initial state "+ initial + "\n");
+//		for (State q : this.states) {
+//			for (Transition<L> t : this.out.get(q)) {
+//				State q1 = t.getSource();
+//				State q2 = t.getTarget();
+//				String sc = t.getSyncConstraint().toString();
+//				L lb = t.getLabel();
+//				str.append("\t" + q1 + " -> "+ q2 + " : " + sc + ", " + lb + "\n");
+//			}
+//		}
+//		 
+//		return str.toString();
 	}
 	
 	/**
@@ -368,8 +387,12 @@ public class Automaton<L extends Label<L>> {
 		
 		return new Automaton<L>(Q, P, T, q0, lbl);
 	}
-
-	public Automaton<L> evaluate(Map<String, String> params) {
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Automaton<L> evaluate(Map<String, Expression> params) {
 		Map<State, Set<Transition<L>>> out = new HashMap<State, Set<Transition<L>>>();
 		for (Map.Entry<State, Set<Transition<L>>> entry : this.out.entrySet()) {
 			Set<Transition<L>> outq =  new HashSet<Transition<L>>();

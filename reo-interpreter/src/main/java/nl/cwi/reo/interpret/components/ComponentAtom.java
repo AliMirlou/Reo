@@ -1,18 +1,18 @@
-package nl.cwi.reo.interpret.systems;
+package nl.cwi.reo.interpret.components;
 
 import java.util.Map;
 import java.util.Objects;
 
-import nl.cwi.reo.interpret.blocks.Assembly;
+import nl.cwi.reo.interpret.blocks.Body;
 import nl.cwi.reo.interpret.expressions.ValueList;
-import nl.cwi.reo.interpret.semantics.ComponentList;
 import nl.cwi.reo.interpret.signatures.SignatureConcrete;
 import nl.cwi.reo.interpret.signatures.SignatureExpression;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.VariableList;
+import nl.cwi.reo.semantics.api.Connector;
 import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Semantics;
 
-public final class ReoSystemValue<T extends Semantics<T>> implements ReoSystem<T> {
+public final class ComponentAtom<T extends Semantics<T>> implements ComponentDefinition<T> {
 	
 	/**
 	 * Signature expression.
@@ -22,14 +22,14 @@ public final class ReoSystemValue<T extends Semantics<T>> implements ReoSystem<T
 	/**
 	 * Program.
 	 */
-	private final Assembly<T> prog;
+	private final Body<T> prog;
 	
 	/**
 	 * Constructs a new component value.
 	 * @param sign
 	 * @param prog
 	 */
-	public ReoSystemValue(SignatureExpression sign, Assembly<T> prog) {
+	public ComponentAtom(SignatureExpression sign, Body<T> prog) {
 		if (sign == null || prog == null)
 			throw new NullPointerException();
 		this.sign = sign;
@@ -40,25 +40,25 @@ public final class ReoSystemValue<T extends Semantics<T>> implements ReoSystem<T
 		return sign;
 	}
 	
-	public ComponentList<T> getInstances() {
-		return prog.getInstances();
+	public Connector<T> getInstances() {
+		return prog.getConnector();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ReoSystemValue<T> evaluate(Map<String, Expression> params) {
-		return new ReoSystemValue<T>(sign, prog.evaluate(params));
+	public ComponentAtom<T> evaluate(Map<String, Expression> params) {
+		return new ComponentAtom<T>(sign, prog.evaluate(params));
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Assembly<T> instantiate(ValueList values, VariableNameList iface) {
+	public Body<T> instantiate(ValueList values, VariableList iface) {
 		SignatureConcrete links = sign.evaluate(values, iface);
-		Assembly<T> _prog = prog.instantiate(links);
+		Body<T> _prog = prog.instantiate(links);
 		return _prog;
 	}
 	
@@ -69,8 +69,8 @@ public final class ReoSystemValue<T extends Semantics<T>> implements ReoSystem<T
 	public boolean equals(Object other) {
 	    if (other == null) return false;
 	    if (other == this) return true;
-	    if (!(other instanceof ReoSystemValue<?>)) return false;
-	    ReoSystemValue<?> p = (ReoSystemValue<?>)other;
+	    if (!(other instanceof ComponentAtom<?>)) return false;
+	    ComponentAtom<?> p = (ComponentAtom<?>)other;
 	   	return Objects.equals(this.sign, p.sign) && 
 	   			Objects.equals(this.prog, p.prog);
 	}

@@ -25,25 +25,22 @@ import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.errors.Message;
 import nl.cwi.reo.errors.MessageType;
 import nl.cwi.reo.errors.MyErrorListener;
-import nl.cwi.reo.interpret.blocks.Assembly;
+import nl.cwi.reo.interpret.blocks.Body;
+import nl.cwi.reo.interpret.components.ComponentAtom;
 import nl.cwi.reo.interpret.expressions.ValueList;
 import nl.cwi.reo.interpret.listeners.Listener;
-import nl.cwi.reo.interpret.semantics.FlatConnector;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.semantics.ComponentList;
-import nl.cwi.reo.interpret.signatures.SignatureConcrete;
 import nl.cwi.reo.interpret.strings.StringValue;
-import nl.cwi.reo.interpret.systems.ReoSystemValue;
+import nl.cwi.reo.semantics.api.Connector;
 import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Semantics;
-import nl.cwi.reo.semantics.api.SemanticsType;
 
 public class Interpreter<T extends Semantics<T>> {
 	
 	/**
 	 * Type of semantics.
 	 */
-	private final SemanticsType semantics;
+	private final T instance;
 	
 	/**
 	 * ANTLR listener.
@@ -64,42 +61,40 @@ public class Interpreter<T extends Semantics<T>> {
 	 * Constructs a Reo interpreter.
 	 * @param dirs		list of directories of Reo components
 	 */
-	public Interpreter(SemanticsType semantics, Listener<T> listener, List<String> dirs, List<String> params) {
-		if (semantics == null || listener == null || dirs == null || params == null)
+	public Interpreter(T instance, Listener<T> listener, List<String> dirs, List<String> params) {
+		if (instance == null || listener == null || dirs == null || params == null)
 			throw new NullPointerException();
-		this.semantics = semantics;
+		this.instance = instance;
 		this.listener = listener;
 		this.dirs = Collections.unmodifiableList(dirs);	
 		this.params = Collections.unmodifiableList(params);	
 	}
 
 	/**
-	 * Interprets a list of Reo files (the first file is the main file) as a 
-	 * list of atomic components.
+	 * Interprets a list of Reo files (the first file is the main file) as a Reo connector.
 	 * @param file		non-empty list of Reo file names.
-	 * @return list of work automata.
+	 * @return Connector semantics of the first source file.
 	 */
 	@SuppressWarnings("unchecked")
-	public FlatConnector<T> interpret(List<String> srcfiles) {
+	public Connector<T> interpret(String srcfile) {
 		try {			
 			// Find all available component expressions.
 			Stack<ReoFile<T>> stack = new Stack<ReoFile<T>>();	
 			List<String> parsed = new ArrayList<String>();
 			Queue<String> components = new LinkedList<String>();
 			
-			for (String file : srcfiles) {
-				String filename = new File(file).getName().replaceFirst("[.][^.]+$", "");
-				ReoFile<T> program = parse(new ANTLRFileStream(file));
-				if (program != null) {
-					if (!program.getName().endsWith(filename))
-						throw new CompilationException(program.getToken(), "Component must have name " + filename + ".");
-					stack.push(program);
-					parsed.add(program.getName());
-					components.addAll(program.getImports());
-				} else {
-					System.err.println("[error] Cannot parse " + new File(file).getName() + ".");
-				}
-			}		
+			String shortFileName = new File(srcfile).getName();
+			String componentName = shortFileName.replaceFirst("[.][^.]+$", "");
+			ReoFile<T> mainprogram = parse(new ANTLRFileStream(srcfile));
+			if (mainprogram != null) {
+				if (!mainprogram.getName().endsWith(componentName))
+					throw new CompilationException(mainprogram.getToken(), "Component must have name " + componentName + ".");
+				stack.push(mainprogram);
+				parsed.add(mainprogram.getName());
+				components.addAll(mainprogram.getImports());
+			} else {
+				System.err.println("[error] Cannot parse " + shortFileName + ".");
+			}	
 			
 			while (!components.isEmpty()) {
 				String comp = components.poll();
@@ -121,7 +116,7 @@ public class Interpreter<T extends Semantics<T>> {
 			}
 
 			// Evaluate these component expressions.
-			Definitions definitions = new Definitions();
+			Definitions<T> definitions = new Definitions<T>();
 			String name = null;		
 			while (!stack.isEmpty()) {
 				ReoFile<T> program = stack.pop();
@@ -132,19 +127,14 @@ public class Interpreter<T extends Semantics<T>> {
 			
 			// Get the instance from the main component.		
 			Expression expr = definitions.get(name);		
-			if (expr instanceof ReoSystemValue<?>) {				
-				ReoSystemValue<T> main = (ReoSystemValue<T>)expr;
+			if (expr instanceof ComponentAtom<?>) {				
+				ComponentAtom<T> main = (ComponentAtom<T>)expr;
 				ValueList values = new ValueList();
-				for (String x : params) values.add(new StringValue(x));
-				SignatureConcrete sign = main.getSignature().evaluate(values, null);
-				
-				Assembly<T> main_p = main.instantiate(values, null);
-				
-				ComponentList<T> instances = main_p.getInstances();
-				
-				instances.insertNodes(true, false);
-				
-				return new FlatConnector<T>(instances.getComponents(), name, sign.keySet());
+				for (String x : params) 
+					values.add(new StringValue(x));				
+				Body<T> main_p = main.instantiate(values, null);				
+				Connector<T> connector = main_p.getConnector();				
+				return connector.insertNodes(true, false, instance);
 			}
 		} catch (IOException e) {
 			System.out.print(e.getMessage());
@@ -152,7 +142,7 @@ public class Interpreter<T extends Semantics<T>> {
 			System.out.println(new Message(MessageType.ERROR, e.getToken(), e.getMessage()));
 		}		
 
-		return null;
+		return new Connector<T>();
 	}
 	
 	/**
@@ -170,7 +160,7 @@ public class Interpreter<T extends Semantics<T>> {
 		int k = component.lastIndexOf('.') + 1;
 		String name = component.substring(k);
 		String directory = component.substring(0, k).replace('.', File.separatorChar);
-		String cp1 = directory + name + "." + semantics + ".treo";
+		String cp1 = directory + name + "." + instance.getType() + ".treo";
 		String cp2 = directory + name + ".treo";
 	
 	search:

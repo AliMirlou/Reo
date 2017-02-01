@@ -3,7 +3,7 @@ package nl.cwi.reo.interpret.strings;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.semantics.api.Expression;
 
 public class StringVariable implements StringExpression {
@@ -11,13 +11,13 @@ public class StringVariable implements StringExpression {
 	/**
 	 * Variable name.
 	 */
-	private Variable var;
+	private VariableExpression var;
 
 	/**
 	 * Constructs a natural number from a string.
 	 * @param s 	string representation of a natural number
 	 */
-	public StringVariable(Variable var) {
+	public StringVariable(VariableExpression var) {
 		if (var == null)
 			throw new NullPointerException();
 		this.var = var;
@@ -33,8 +33,8 @@ public class StringVariable implements StringExpression {
 		Expression e = var.evaluate(params);
 		if (e instanceof StringExpression) {
 			return (StringExpression)e;
-		} else if (e instanceof Variable) {
-			return new StringVariable((Variable)e);
+		} else if (e instanceof VariableExpression) {
+			return new StringVariable((VariableExpression)e);
 		} 
 		return this;
 	}

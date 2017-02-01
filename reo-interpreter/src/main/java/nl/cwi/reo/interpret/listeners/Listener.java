@@ -67,9 +67,9 @@ import nl.cwi.reo.interpret.ReoParser.Strg_variableContext;
 import nl.cwi.reo.interpret.ReoParser.TypeContext;
 import nl.cwi.reo.interpret.ReoParser.SecnContext;
 import nl.cwi.reo.interpret.ReoParser.VarContext;
+import nl.cwi.reo.interpret.blocks.BlockList;
 import nl.cwi.reo.interpret.blocks.Body;
-import nl.cwi.reo.interpret.blocks.Assembly;
-import nl.cwi.reo.interpret.blocks.ReoBlock;
+import nl.cwi.reo.interpret.blocks.Block;
 import nl.cwi.reo.interpret.blocks.Definition;
 import nl.cwi.reo.interpret.blocks.ForLoop;
 import nl.cwi.reo.interpret.blocks.IfThenElse;
@@ -78,26 +78,25 @@ import nl.cwi.reo.interpret.booleans.BooleanConjunction;
 import nl.cwi.reo.interpret.booleans.BooleanDisequality;
 import nl.cwi.reo.interpret.booleans.BooleanDisjunction;
 import nl.cwi.reo.interpret.booleans.BooleanEquality;
-import nl.cwi.reo.interpret.booleans.BooleanExpression;
 import nl.cwi.reo.interpret.booleans.BooleanGreaterOrEqual;
 import nl.cwi.reo.interpret.booleans.BooleanGreaterThan;
 import nl.cwi.reo.interpret.booleans.BooleanLessOrEqual;
 import nl.cwi.reo.interpret.booleans.BooleanLessThan;
-import nl.cwi.reo.interpret.booleans.BooleanValue;
 import nl.cwi.reo.interpret.booleans.BooleanVariable;
+import nl.cwi.reo.interpret.components.ComponentAtom;
+import nl.cwi.reo.interpret.components.ComponentDefinition;
+import nl.cwi.reo.interpret.components.ComponentVariable;
+import nl.cwi.reo.interpret.components.ComponentComposite;
 import nl.cwi.reo.interpret.expressions.ExpressionList;
 import nl.cwi.reo.interpret.integers.IntegerAddition;
 import nl.cwi.reo.interpret.integers.IntegerDivision;
 import nl.cwi.reo.interpret.integers.IntegerExponentiation;
-import nl.cwi.reo.interpret.integers.IntegerExpression;
 import nl.cwi.reo.interpret.integers.IntegerMultiplication;
 import nl.cwi.reo.interpret.integers.IntegerRemainder;
 import nl.cwi.reo.interpret.integers.IntegerSubstraction;
 import nl.cwi.reo.interpret.integers.IntegerUnaryMinus;
-import nl.cwi.reo.interpret.integers.IntegerValue;
 import nl.cwi.reo.interpret.integers.IntegerVariable;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.semantics.ComponentList;
 import nl.cwi.reo.interpret.signatures.InterfaceExpression;
 import nl.cwi.reo.interpret.signatures.InterfaceNode;
 import nl.cwi.reo.interpret.signatures.Node;
@@ -111,14 +110,16 @@ import nl.cwi.reo.interpret.signatures.TypeTag;
 import nl.cwi.reo.interpret.strings.StringExpression;
 import nl.cwi.reo.interpret.strings.StringValue;
 import nl.cwi.reo.interpret.strings.StringVariable;
-import nl.cwi.reo.interpret.systems.ReoSystemComposite;
-import nl.cwi.reo.interpret.systems.ReoSystem;
-import nl.cwi.reo.interpret.systems.ReoSystemValue;
-import nl.cwi.reo.interpret.systems.ReoSystemVariable;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.interpret.variables.VariableName;
 import nl.cwi.reo.interpret.variables.VariableRange;
+import nl.cwi.reo.semantics.api.BooleanExpression;
+import nl.cwi.reo.semantics.api.BooleanValue;
+import nl.cwi.reo.semantics.api.Component;
+import nl.cwi.reo.semantics.api.Connector;
 import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.api.IntegerExpression;
+import nl.cwi.reo.semantics.api.IntegerValue;
 import nl.cwi.reo.semantics.api.PrioType;
 import nl.cwi.reo.semantics.api.Semantics;
 
@@ -141,11 +142,11 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 	private List<String> imports = new ArrayList<String>();
 	
 	// Components
-	private ParseTreeProperty<ReoSystem<T>> systems = new ParseTreeProperty<ReoSystem<T>>();
+	private ParseTreeProperty<ComponentDefinition<T>> systems = new ParseTreeProperty<ComponentDefinition<T>>();
 	
 	// Blocks
-	private ParseTreeProperty<Body<T>> bodies = new ParseTreeProperty<Body<T>>();
-	private ParseTreeProperty<ReoBlock<T>> blocks = new ParseTreeProperty<ReoBlock<T>>();
+	private ParseTreeProperty<BlockList<T>> blockLists = new ParseTreeProperty<BlockList<T>>();
+	private ParseTreeProperty<Block<T>> blocks = new ParseTreeProperty<Block<T>>();
 	
 	// Values	
 	private ParseTreeProperty<Expression> exprs = new ParseTreeProperty<Expression>();
@@ -173,7 +174,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 	private ParseTreeProperty<InterfaceNode> rnodes = new ParseTreeProperty<InterfaceNode>();
 	       
 	// Variables
-	private ParseTreeProperty<Variable> variables = new ParseTreeProperty<Variable>();	
+	private ParseTreeProperty<VariableExpression> variableExpressions = new ParseTreeProperty<VariableExpression>();	
 	private ParseTreeProperty<List<IntegerExpression>> bounds = new ParseTreeProperty<List<IntegerExpression>>();	
 
 	// Integer expressions
@@ -225,8 +226,8 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitRsys_variable(Rsys_variableContext ctx) {
-		Variable var = variables.get(ctx.var());
-		systems.put(ctx, new ReoSystemVariable<T>(var));
+		VariableExpression var = variableExpressions.get(ctx.var());
+		systems.put(ctx, new ComponentVariable<T>(var));
 	}
 
 	@Override
@@ -235,16 +236,16 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 	@Override
 	public void exitRsys_atomic(Rsys_atomicContext ctx) {
 		T atom = atoms.get(ctx.atom());
-		ComponentList<T> comps = null;
+		Connector<T> comps = null;
 		if (atom == null) {
-			comps = new ComponentList<T>();
+			comps = new Connector<T>();
 			hasErrors = true;
 			System.err.println(new Message(MessageType.ERROR, ctx.start, "Undefined semantics."));
 		} else {
-			comps = new ComponentList<T>(atom);
+			comps = new Connector<T>(new Component<T>(atom));
 		}
-		Assembly<T> prog = new Assembly<T>(new Definitions(), comps);
-		systems.put(ctx, new ReoSystemValue<T>(signatureExpressions.get(ctx.sign()), prog));
+		Body<T> prog = new Body<T>(new Definitions<T>(), comps);
+		systems.put(ctx, new ComponentAtom<T>(signatureExpressions.get(ctx.sign()), prog));
 	}
 
 	@Override
@@ -252,7 +253,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitRsys_composite(Rsys_compositeContext ctx) {
-		systems.put(ctx, new ReoSystemComposite<T>(signatureExpressions.get(ctx.sign()), bodies.get(ctx.block())));		
+		systems.put(ctx, new ComponentComposite<T>(signatureExpressions.get(ctx.sign()), blockLists.get(ctx.block())));		
 	}
 	
 	/**
@@ -261,29 +262,29 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 	
 	@Override
 	public void exitBlock(BlockContext ctx) {
-		List<ReoBlock<T>> stmtlist = new ArrayList<ReoBlock<T>>();
+		List<Block<T>> stmtlist = new ArrayList<Block<T>>();
 		for (StmtContext stmt_ctx : ctx.stmt())
 			stmtlist.add(blocks.get(stmt_ctx));
-		bodies.put(ctx, new Body<T>(stmtlist));
+		blockLists.put(ctx, new BlockList<T>(stmtlist));
 	}
 
 	@Override
 	public void exitStmt_equation(Stmt_equationContext ctx) {
 		Expression x = exprs.get(ctx.expr(0));
 		Expression y = exprs.get(ctx.expr(1));		
-		if (x instanceof Variable) {
-			blocks.put(ctx, new Definition<T>((Variable)x, y));			
-		} else if (x instanceof Variable) {
-			blocks.put(ctx, new Definition<T>((Variable)y, x));
+		if (x instanceof VariableExpression) {
+			blocks.put(ctx, new Definition<T>((VariableExpression)x, y));			
+		} else if (x instanceof VariableExpression) {
+			blocks.put(ctx, new Definition<T>((VariableExpression)y, x));
 		} else {
-			blocks.put(ctx, new Assembly<T>());
+			blocks.put(ctx, new Body<T>());
 			System.err.println(new Message(MessageType.WARNING, ctx.start, "Ignoring assertion " + ctx.getText() + "."));
 		}
 	}
 
 	@Override
 	public void exitStmt_compdefn(Stmt_compdefnContext ctx) {
-		blocks.put(ctx, new Definition<T>(variables.get(ctx.var()), systems.get(ctx.rsys())));
+		blocks.put(ctx, new Definition<T>(variableExpressions.get(ctx.var()), systems.get(ctx.rsys())));
 	}
 
 	@Override
@@ -298,24 +299,24 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitStmt_iteration(Stmt_iterationContext ctx) {
-		VariableName p = new VariableName(ctx.ID().getText(), ctx.start);
+		Variable p = new Variable(ctx.ID().getText(), ctx.start);
 		IntegerExpression a = intrs.get(ctx.intr(0));
 		IntegerExpression b = intrs.get(ctx.intr(1));
-		ReoBlock<T> B = bodies.get(ctx.block());
+		Block<T> B = blockLists.get(ctx.block());
 		blocks.put(ctx, new ForLoop<T>(p, a, b, B));
 	}
 
 	@Override
 	public void exitStmt_condition(Stmt_conditionContext ctx) {
 		List<BooleanExpression> guards = new ArrayList<BooleanExpression>();
-		List<ReoBlock<T>> branches = new ArrayList<ReoBlock<T>>();
+		List<Block<T>> branches = new ArrayList<Block<T>>();
 		for (BoolContext Bool_ctx : ctx.bool())
 			guards.add(bools.get(Bool_ctx));
 		for (BlockContext block_ctx : ctx.block())
-			branches.add(bodies.get(block_ctx));
+			branches.add(blockLists.get(block_ctx));
 		if (guards.size() == branches.size()) {
 			guards.add(new BooleanValue(true));
-			branches.add(new Assembly<T>());
+			branches.add(new Body<T>());
 		} else {
 			guards.add(new BooleanValue(true));
 		}
@@ -324,7 +325,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 	
 	@Override
 	public void exitComp_instance(Comp_instanceContext ctx) {
-		ReoSystem<T> cexpr = systems.get(ctx.rsys());
+		ComponentDefinition<T> cexpr = systems.get(ctx.rsys());
 		ExpressionList list = lists.get(ctx.list());
 		if (list == null) list = new ExpressionList();
 		InterfaceExpression iface = ifaces.get(ctx.iface());
@@ -373,7 +374,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitExpr_variable(Expr_variableContext ctx) {
-		exprs.put(ctx, variables.get(ctx.var()));
+		exprs.put(ctx, variableExpressions.get(ctx.var()));
 	}
 	
 	@Override
@@ -474,7 +475,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitBool_variable(Bool_variableContext ctx) {
-		bools.put(ctx, new BooleanVariable(variables.get(ctx.var())));		
+		bools.put(ctx, new BooleanVariable(variableExpressions.get(ctx.var())));		
 	}
 
 	/**
@@ -488,7 +489,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitStrg_variable(Strg_variableContext ctx) {
-		strgs.put(ctx, new StringVariable(variables.get(ctx.var())));		
+		strgs.put(ctx, new StringVariable(variableExpressions.get(ctx.var())));		
 	}
 	
 	/**
@@ -513,7 +514,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitParam(ParamContext ctx) {
-		Variable var = variables.get(ctx.var());
+		VariableExpression var = variableExpressions.get(ctx.var());
 		ParameterType type = parametertypes.get(ctx.ptype());
 		if (type == null) type = new TypeTag("");
 		parameters.put(ctx, new Parameter(var, type));
@@ -540,8 +541,8 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitNode(NodeContext ctx) {
-		Variable var = variables.get(ctx.var());
-		if (var == null) var = new VariableName("", ctx.start);
+		VariableExpression var = variableExpressions.get(ctx.var());
+		if (var == null) var = new Variable("", ctx.start);
 		TypeTag tag = typetags.get(ctx.type());
 		if (tag == null) tag = new TypeTag();
 		NodeType type = NodeType.MIXED;
@@ -589,7 +590,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 		PrioType prio = PrioType.NONE;
 		if (ctx.prio != null)
 			prio = ctx.prio.getType() == ReoParser.AMP ? PrioType.AMPERSANT : PrioType.PLUS ;
-		rnodes.put(ctx, new InterfaceNode(variables.get(ctx.var()), prio));
+		rnodes.put(ctx, new InterfaceNode(variableExpressions.get(ctx.var()), prio));
 	}
      
 	/**
@@ -609,9 +610,9 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 		for (IndicesContext indices_ctx : ctx.indices())
 			indices.add(bounds.get(indices_ctx));
 		if (indices.isEmpty()) {
-			variables.put(ctx, new VariableName(name, ctx.start));
+			variableExpressions.put(ctx, new Variable(name, ctx.start));
 		} else { 
-			variables.put(ctx, new VariableRange(name, indices, ctx.start));
+			variableExpressions.put(ctx, new VariableRange(name, indices, ctx.start));
 		}
 	}
 
@@ -629,7 +630,7 @@ public class Listener<T extends Semantics<T>> extends ReoBaseListener {
 
 	@Override
 	public void exitIntr_variable(Intr_variableContext ctx) {
-		intrs.put(ctx, new IntegerVariable(variables.get(ctx.var())));
+		intrs.put(ctx, new IntegerVariable(variableExpressions.get(ctx.var())));
 	}
 
 	@Override

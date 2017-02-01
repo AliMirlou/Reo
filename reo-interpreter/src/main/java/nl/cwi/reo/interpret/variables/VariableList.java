@@ -12,20 +12,20 @@ import nl.cwi.reo.semantics.api.Expression;
 /**
  * An immutable list of variable names.
  */
-public final class VariableNameList implements Variable, Expressions {
+public final class VariableList implements VariableExpression, Expressions {
 	
-	private final List<VariableName> list;
+	private final List<Variable> list;
 	
 	private final Token token;
 	
-	public VariableNameList(List<VariableName> list, Token token) {
+	public VariableList(List<Variable> list, Token token) {
 		if (list == null)
 			throw new NullPointerException();
 		this.list = Collections.unmodifiableList(list);
 		this.token = token;
 	}
 
-	public List<VariableName> getList() {
+	public List<Variable> getList() {
 		return list;
 	}
 
@@ -35,7 +35,7 @@ public final class VariableNameList implements Variable, Expressions {
 	}
 
 	@Override
-	public VariableNameList evaluate(Map<String, Expression> params) {
+	public VariableList evaluate(Map<String, Expression> params) {
 		return this;
 	}
 	

@@ -7,17 +7,17 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
 
-import nl.cwi.reo.interpret.integers.IntegerExpression;
-import nl.cwi.reo.interpret.integers.IntegerValue;
 import nl.cwi.reo.interpret.integers.IntegerVariable;
-import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.interpret.semantics.Definitions;
+import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.api.IntegerExpression;
+import nl.cwi.reo.semantics.api.IntegerValue;
 
 /**
  * An immutable parameterized set of variable names, such as, for example, 
  * (a.b, c[-31], x.y.z[-1][0...1-k][5]).
  */
-public final class VariableRange implements Variable {
+public final class VariableRange implements VariableExpression {
 
 	/**
 	 * Fully qualified name.
@@ -70,8 +70,8 @@ public final class VariableRange implements Variable {
 	 * @return a map that assigns each parameter name to an integer value, 
 	 * if these values can be found, and null otherwise.
 	 */
-	public Definitions findParamFromSize(int size) {		
-		Definitions params = new Definitions();
+	public Definitions<?> findParamFromSize(int size) {		
+		Definitions<?> params = new Definitions<>();
 		for (List<IntegerExpression> bounds : indices) {
 			if (bounds.size() == 1) {
 				if (!(bounds.get(0) instanceof IntegerValue)) 
@@ -81,8 +81,8 @@ public final class VariableRange implements Variable {
 					int lower = ((IntegerValue)bounds.get(0)).toInteger();
 					if (bounds.get(1) instanceof IntegerVariable) {
 						IntegerVariable k = (IntegerVariable)bounds.get(1);						
-						if (k.getVariable() instanceof VariableName) {
-							VariableName name = (VariableName)k.getVariable();
+						if (k.getVariable() instanceof Variable) {
+							Variable name = (Variable)k.getVariable();
 							params.put(name.getName(), new IntegerValue(lower + size - 1));
 						} else {
 							return null;
@@ -94,8 +94,8 @@ public final class VariableRange implements Variable {
 					int upper = ((IntegerValue)bounds.get(1)).toInteger();
 					if (bounds.get(0) instanceof IntegerVariable) {
 						IntegerVariable k = (IntegerVariable)bounds.get(1);						
-						if (k.getVariable() instanceof VariableName) {
-							VariableName name = (VariableName)k.getVariable();
+						if (k.getVariable() instanceof Variable) {
+							Variable name = (Variable)k.getVariable();
 							params.put(name.getName(), new IntegerValue(upper - size + 1));
 						}
 					} else {
@@ -110,7 +110,7 @@ public final class VariableRange implements Variable {
 	}
 	
 	@Override
-	public Variable evaluate(Map<String, Expression> params) {
+	public VariableExpression evaluate(Map<String, Expression> params) {
 		
 		boolean boundsAreKnown = true;
 		List<List<IntegerExpression>> indices_p = new ArrayList<List<IntegerExpression>>();
@@ -149,12 +149,12 @@ public final class VariableRange implements Variable {
 				}			
 			}
 			
-			List<VariableName> vars = new ArrayList<VariableName>();
+			List<Variable> vars = new ArrayList<Variable>();
 			for (String x : variables) 
-				vars.add(new VariableName(x, token));
+				vars.add(new Variable(x, token));
 
 			if (isList)
-				return new VariableNameList(vars, token);
+				return new VariableList(vars, token);
 			else
 				return vars.get(0);
 			

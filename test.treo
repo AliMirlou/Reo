@@ -1,13 +1,22 @@
 import reo.fifo1;
 
-test(a,d) {
-/*
-	fifo = <k:int>(a?, b!) { 
-		if (k <= 0) { 
-			a = b 
-		} else {
-			fifo[k](a,b)
-		}
+test(a,b) {
+
+	fifo[2] = (a?,b!) {
+		fifo1(a,x) 
+		fifo1(x,b)
+	}
+
+	fifo[3] = (a?,b!) {
+		fifo1(a,x) 
+		fifo[2](x,b)
+	}
+
+	fifo[3](g,h)
+
+
+/*	fifo = <k:int>(a?, b!) { 
+		fifo[k](a,b)
 		for i = 0..k {
 			if (i == 0) {
 				fifo[0] = (a?,b!) {
@@ -21,10 +30,13 @@ test(a,d) {
 			}
 		}
 	}
-	fifo<1>(a,b)
+	fifo<2>(a,b)
 	fifo<1>(b,c)
 	fifo<1>(c,d)
-*/
+
+	
+	fifo<2>(a,b)
+	
 	recursive<k:int>(a?,b!) {
 		if (k==0) {
 			a=b 
@@ -33,7 +45,7 @@ test(a,d) {
 			fifo1(x,b)		
 		}
 	}
-	
-	recursive<2>(a,d)
+*/	
+	//recursive<2>(a,d)
 
 }

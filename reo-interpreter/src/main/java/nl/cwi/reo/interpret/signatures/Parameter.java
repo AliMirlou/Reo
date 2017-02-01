@@ -3,7 +3,7 @@ package nl.cwi.reo.interpret.signatures;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.semantics.api.Evaluable;
 import nl.cwi.reo.semantics.api.Expression;
 
@@ -12,18 +12,18 @@ import nl.cwi.reo.semantics.api.Expression;
  */
 public final class Parameter implements Evaluable<Parameter> {
 	
-	private final Variable var;
+	private final VariableExpression var;
 	
 	private final ParameterType type;
 	
-	public Parameter(Variable var, ParameterType type) {
+	public Parameter(VariableExpression var, ParameterType type) {
 		if (var == null || type == null)
 			throw new NullPointerException();
 		this.var = var;
 		this.type = type;
 	}
 
-	public Variable getVariable() {
+	public VariableExpression getVariable() {
 		return this.var;
 	}
 	
@@ -34,9 +34,9 @@ public final class Parameter implements Evaluable<Parameter> {
 	@Override
 	public Parameter evaluate(Map<String, Expression> params) throws CompilationException {
 		Expression e = var.evaluate(params);
-		if (!(e instanceof Variable))
+		if (!(e instanceof VariableExpression))
 			e = var;
-		return new Parameter((Variable)e, type);
+		return new Parameter((VariableExpression)e, type);
 	}
 	
 	@Override

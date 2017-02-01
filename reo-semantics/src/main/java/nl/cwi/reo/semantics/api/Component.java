@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.stringtemplate.v4.ST;
+
 //import nl.cwi.reo.interpret.strings.StringValue;
 
-public final class Component<T extends Semantics<T>> implements Block<T> {
+public final class Component<T extends Semantics<T>> implements SubComponent<T> {
 	
 	private final T semantics;
 	
@@ -78,26 +80,22 @@ public final class Component<T extends Semantics<T>> implements Block<T> {
 	  */
 	@Override
 	public Component<T> evaluate(Map<String, Expression> params) {
-		Map<String, String> p = new HashMap<String, String>();
-		for (Map.Entry<String, Expression> def : params.entrySet())
-			if (def.getValue() instanceof Object)//StringValue)
-				p.put(def.getKey(), ((Object)def.getValue()).toString());
-		return new Component<T>(semantics.evaluate(p), source);
+		return new Component<T>(semantics.evaluate(params), source);
 	}
 
 	/**
 	  * {@inheritDoc}
 	  */
 	@Override
-	public Block<T> connect(Map<Port, Port> joins) {
-		return new Component<T>(semantics, source, Links.connect(links, joins));
+	public SubComponent<T> reconnect(Map<Port, Port> joins) {
+		return new Component<T>(semantics, source, Links.reconnect(links, joins));
 	}
 
 	/**
 	  * {@inheritDoc}
 	  */
 	@Override
-	public Block<T> renameHidden(Integer i) {
+	public SubComponent<T> renameHidden(Integer i) {
 		return new Component<T>(semantics, source, Links.renameHidden(links, i));
 	}
 
@@ -115,7 +113,7 @@ public final class Component<T extends Semantics<T>> implements Block<T> {
 	  * {@inheritDoc}
 	  */
 	@Override
-	public Block<T> insertNodes(boolean mergers, boolean replicators, T nodeFactory) {
+	public SubComponent<T> insertNodes(boolean mergers, boolean replicators, T nodeFactory) {
 		return this;
 	}
 
@@ -127,5 +125,16 @@ public final class Component<T extends Semantics<T>> implements Block<T> {
 		List<T> list = new ArrayList<T>();
 		list.add(semantics.rename(links));
 		return list;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		ST st = new ST("{\n  <semantics>\n  <source>\n}");
+		st.add("semantics", semantics);
+		st.add("source", source);
+		return st.render();
 	}
 }

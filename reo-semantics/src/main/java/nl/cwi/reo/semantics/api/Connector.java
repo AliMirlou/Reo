@@ -8,11 +8,17 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.stringtemplate.v4.ST;
+
 /**
- * An ordered list of blocks of components together with a set of links.
+ * <p>The semantics of Reo connectors specified in .treo files.
+ * This class consists of an ordered list of blocks of components together with a set of links.
+ * 
+ * <p>This class is immutable.
+ * 
  * @param <T> semantics object type
  */
-public final class Connector<T extends Semantics<T>> implements Block<T> {
+public final class Connector<T extends Semantics<T>> implements SubComponent<T> {
 		
 	/**
 	 * Type of composition
@@ -22,7 +28,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	/**
 	 * List of components
 	 */
-	private final List<Block<T>> components;
+	private final List<SubComponent<T>> components;
 	
 	/**
 	 * Set of links
@@ -34,7 +40,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 */
 	public Connector() { 
 		this.operator = "";
-		this.components = Collections.unmodifiableList(new ArrayList<Block<T>>());
+		this.components = Collections.unmodifiableList(new ArrayList<SubComponent<T>>());
 		this.links = Collections.unmodifiableMap(new HashMap<Port, Port>());
 	}
 	
@@ -45,7 +51,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	public Connector(Component<T> atom) {
 		if (atom == null)
 			throw new NullPointerException();
-		List<Block<T>> components = new ArrayList<Block<T>>();
+		List<SubComponent<T>> components = new ArrayList<SubComponent<T>>();
 		components.add(atom);
 		this.operator = "";
 		this.components = Collections.unmodifiableList(components);
@@ -60,11 +66,11 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 * @param operator		name of product operator
 	 * @param components	list of subcomponents
 	 */
-	public Connector(String operator, List<Block<T>> components) { 
+	public Connector(String operator, List<SubComponent<T>> components) { 
 		this.operator = operator;
 		this.components = Collections.unmodifiableList(components);
 		Map<Port, Port> links = new HashMap<Port, Port>();
-		for (Block<T> comp : components)
+		for (SubComponent<T> comp : components)
 			for (Map.Entry<Port, Port> link : comp.getLinks().entrySet()) 
 				links.put(link.getValue(), link.getValue());
 		this.links = Collections.unmodifiableMap(links);
@@ -76,7 +82,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 * @param components	list of subcomponents
 	 * @param links			set of links mapping local ports to global ports
 	 */
-	public Connector(String operator, List<Block<T>> components, Map<Port, Port> links) { 
+	public Connector(String operator, List<SubComponent<T>> components, Map<Port, Port> links) { 
 		this.operator = operator;
 		this.components = Collections.unmodifiableList(components);
 		this.links = Collections.unmodifiableMap(links);
@@ -94,7 +100,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 * Gets the list of all subcomponents in this connector.
 	 * @return list of subcomponents.
 	 */
-	public List<Block<T>> getComponents() {
+	public List<SubComponent<T>> getComponents() {
 		return components;
 	}
 
@@ -112,10 +118,10 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 * @param operator			name of the operator
 	 * @param components 		other list of instances
 	 */
-	public static <T extends Semantics<T>> Connector<T> compose(String operator, List<Block<T>> components) {
-		List<Block<T>> newcomponents = new ArrayList<Block<T>>();
+	public static <T extends Semantics<T>> Connector<T> compose(String operator, List<? extends SubComponent<T>> components) {
+		List<SubComponent<T>> newcomponents = new ArrayList<SubComponent<T>>();
 		Integer i = Integer.valueOf(0);
-		for (Block<T> comp : components)
+		for (SubComponent<T> comp : components)
 			newcomponents.add(comp.renameHidden(i));
 		return new Connector<T>(operator, newcomponents);
 	}
@@ -125,25 +131,25 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	 */
 	@Override
 	public Connector<T> evaluate(Map<String, Expression> params) {
-		List<Block<T>> newcomps = new ArrayList<Block<T>>(); 
-		for (Block<T> comp : components)
+		List<SubComponent<T>> newcomps = new ArrayList<SubComponent<T>>(); 
+		for (SubComponent<T> comp : components)
 			newcomps.add(comp.evaluate(params));
 		return new Connector<T>(operator, newcomps);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Block<T> connect(Map<Port, Port> joins) {
-		return new Connector<T>(operator, components, Links.connect(links, joins));
+	public Connector<T> reconnect(Map<Port, Port> joins) {
+		return new Connector<T>(operator, components, Links.reconnect(links, joins));
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Block<T> renameHidden(Integer i) {
+	public Connector<T> renameHidden(Integer i) {
 		return new Connector<T>(operator, components, Links.renameHidden(links, i));
 	}
 
@@ -153,7 +159,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	@Override
 	public List<Component<T>> flatten() {
 		List<Component<T>> list = new ArrayList<Component<T>>();
-		for (Block<T> comp : components)
+		for (SubComponent<T> comp : components)
 			list.addAll(comp.flatten());
 		return list;
 	}
@@ -164,12 +170,12 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	@Override
 	public Connector<T> insertNodes(boolean mergers, boolean replicators, T nodeFactory) {
 		
-		List<Block<T>> newcomponents = new ArrayList<Block<T>>();
+		List<SubComponent<T>> newcomponents = new ArrayList<SubComponent<T>>();
 
 		// Count the number of incoming and outgoing channel ends at each node.
 		Map<Port, Integer> outs = new HashMap<Port, Integer>();
 		Map<Port, Integer> ins = new HashMap<Port, Integer>();
-		for (Block<T> comp : components) {
+		for (SubComponent<T> comp : components) {
 			for (Map.Entry<Port, Port> link : comp.getLinks().entrySet()) {
 				Port p = link.getValue();
 				Integer out = outs.get(p);
@@ -190,7 +196,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 		// Split shared ports in every atom in main, and insert a node
 		Map<Port, SortedSet<Port>> nodes = new HashMap<Port, SortedSet<Port>>();
 		
-		for (Block<T> comp : components) {	
+		for (SubComponent<T> comp : components) {	
 							
 			Map<Port, Port> links = new HashMap<Port, Port>();
 
@@ -227,7 +233,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 					}
 					break;
 				default:
-					System.out.println("Ports of atomic components must be known.");
+					System.out.println("IO type of ports of atomic components must be known.");
 					break;
 				}
 				
@@ -236,7 +242,7 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 				nodes.put(p, A);
 			}
 
-			newcomponents.add(comp.insertNodes(mergers, replicators, nodeFactory).connect(links));
+			newcomponents.add(comp.insertNodes(mergers, replicators, nodeFactory).reconnect(links));
 		}
 
 		// Insert new instances of nodes in this list.
@@ -253,11 +259,22 @@ public final class Connector<T extends Semantics<T>> implements Block<T> {
 	@Override
 	public List<T> integrate() {
 		List<T> list = new ArrayList<T>();
-		for (Block<T> comp : components)
+		for (SubComponent<T> comp : components)
 			list.addAll(comp.integrate());
 		List<T> list2 = new ArrayList<T>();
 		for (T x : list2) 
 			x.rename(links);
 		return list2;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		ST st = new ST("<operator>{\n  <components; separator=\"\n\">\n}");
+		st.add("operator", operator);
+		st.add("components", components);
+		return st.render();
 	}
 }

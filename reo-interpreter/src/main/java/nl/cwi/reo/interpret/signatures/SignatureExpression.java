@@ -7,14 +7,14 @@ import java.util.Map;
 import org.antlr.v4.runtime.Token;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.expressions.ValueExpression;
 import nl.cwi.reo.interpret.expressions.ValueList;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.variables.VariableName;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.interpret.variables.VariableRange;
 import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.api.ValueExpression;
 
 public final class SignatureExpression implements ParameterType {
 	
@@ -50,15 +50,15 @@ public final class SignatureExpression implements ParameterType {
 	 * @param iface		node in the interface
 	 * @return Concrete signature containing parameter values and interface.
 	 */
-	public SignatureConcrete evaluate(ValueList values, VariableNameList iface) {
+	public SignatureConcrete evaluate(ValueList values, VariableList iface) {
 		
-		Definitions definitions = new Definitions();		
+		Definitions<?> definitions = new Definitions<>();		
 
 		// Try to find the parameter value for a correct number of parameters
 		int k_params = 0;
 		VariableRange rng_params = null;
 		for (Parameter param : params) {
-			if (param.getVariable() instanceof VariableName) {
+			if (param.getVariable() instanceof Variable) {
 				k_params += 1;
 			} else if (param.getVariable() instanceof VariableRange) {
 				rng_params = (VariableRange)param.getVariable();
@@ -69,7 +69,7 @@ public final class SignatureExpression implements ParameterType {
 		int size_params = values.size() - k_params;
 		
 		if (rng_params != null) {
-			Definitions defs = rng_params.findParamFromSize(size_params);
+			Definitions<?> defs = rng_params.findParamFromSize(size_params);
 			if (defs != null) {
 				definitions.putAll(defs);
 			} else {
@@ -88,10 +88,10 @@ public final class SignatureExpression implements ParameterType {
 			Parameter x = param.next();
 			Expression v = value.next();
 			
-			if (!(x.getVariable() instanceof VariableName)) 
+			if (!(x.getVariable() instanceof Variable)) 
 				throw new CompilationException(x.getVariable().getToken(), x + " is not a valid parameter name.");
 			
-			definitions.put(((VariableName)x.getVariable()).getName(), v);
+			definitions.put(((Variable)x.getVariable()).getName(), v);
 		}
 		
 		// Find the links of the interface. 
@@ -112,7 +112,7 @@ public final class SignatureExpression implements ParameterType {
 			int k_nodes = 0;
 			VariableRange rng_nodes = null;
 			for (Node x : nodes) {
-				if (x.getVariable() instanceof VariableName) {
+				if (x.getVariable() instanceof Variable) {
 					k_nodes += 1;
 				} else if (x.getVariable() instanceof VariableRange) {
 					rng_nodes = (VariableRange)x.getVariable();
@@ -123,7 +123,7 @@ public final class SignatureExpression implements ParameterType {
 			int size_nodes = iface.getList().size() - k_nodes;
 			
 			if (rng_nodes != null) {
-				Definitions defs = rng_nodes.findParamFromSize(size_nodes);
+				Definitions<?> defs = rng_nodes.findParamFromSize(size_nodes);
 				if (defs != null) {
 					definitions.putAll(defs);
 				} else {
@@ -135,11 +135,11 @@ public final class SignatureExpression implements ParameterType {
 			}
 			
 			Iterator<Node> node = nodes.evaluate(definitions).iterator();
-			Iterator<VariableName> var = iface.getList().iterator();
+			Iterator<Variable> var = iface.getList().iterator();
 			
 			while (node.hasNext() && var.hasNext()) {
 				Node x = node.next();
-				VariableName v = var.next();
+				Variable v = var.next();
 				
 				Port p = x.toPort();
 				Port q = x.rename(v).toPort();

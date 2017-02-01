@@ -9,9 +9,9 @@ import org.antlr.v4.runtime.Token;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.expressions.Expressions;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.interpret.variables.VariableName;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.semantics.api.Expression;
 
 public final class InterfaceExpression extends ArrayList<InterfaceNode> implements Expressions {
@@ -43,21 +43,21 @@ public final class InterfaceExpression extends ArrayList<InterfaceNode> implemen
 
 	@Override
 	public Expressions evaluate(Map<String, Expression> params) {
-		List<VariableName> list_p = new ArrayList<VariableName>();
+		List<Variable> list_p = new ArrayList<Variable>();
 		for (InterfaceNode x : this) {
 			Expression r = x.getVariable().evaluate(params);	
-			if (r instanceof VariableNameList) {
-				for (VariableName v : ((VariableNameList)r).getList())
+			if (r instanceof VariableList) {
+				for (Variable v : ((VariableList)r).getList())
 					list_p.add(v);
-			} else if (r instanceof VariableName) {
-				list_p.add((VariableName)r);				
 			} else if (r instanceof Variable) {
+				list_p.add((Variable)r);				
+			} else if (r instanceof VariableExpression) {
 				return this;
 			} else {
 				throw new CompilationException(x.getVariable().getToken(), "Node variable " + x + " cannot be assigned to " + r);
 			}
 		}
-		return new VariableNameList(list_p, token);
+		return new VariableList(list_p, token);
 	}
 	
 	@Override

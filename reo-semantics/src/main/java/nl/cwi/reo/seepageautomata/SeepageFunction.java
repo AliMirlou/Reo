@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import nl.cwi.reo.automata.Label;
+import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Port;
 
 public class SeepageFunction implements Label<SeepageFunction> {
@@ -49,7 +50,7 @@ public class SeepageFunction implements Label<SeepageFunction> {
 	}
 
 	@Override
-	public SeepageFunction evaluate(Map<String, String> params) {
+	public SeepageFunction evaluate(Map<String, Expression> params) {
 		return null;
 	}
 }

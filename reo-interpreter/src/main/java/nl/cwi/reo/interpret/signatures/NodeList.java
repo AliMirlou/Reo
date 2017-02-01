@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.cwi.reo.interpret.variables.VariableName;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.semantics.api.Evaluable;
 import nl.cwi.reo.semantics.api.Expression;
 
@@ -34,8 +34,8 @@ public class NodeList extends ArrayList<Node> implements Evaluable<NodeList> {
 		List<Node> list_p = new ArrayList<Node>();
 		for (Node x : this) {
 			Node x_p = x.evaluate(params);	
-			if (x_p.getVariable() instanceof VariableNameList) {
-				for (VariableName v : ((VariableNameList)x_p.getVariable()).getList())
+			if (x_p.getVariable() instanceof VariableList) {
+				for (Variable v : ((VariableList)x_p.getVariable()).getList())
 					list_p.add(new Node(v, x_p.getNodeType(), x_p.getTypeTag()));
 			} else {
 				list_p.add(x_p);				

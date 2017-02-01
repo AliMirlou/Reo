@@ -1,9 +1,6 @@
-package nl.cwi.reo.interpret.integers;
+package nl.cwi.reo.semantics.api;
 
 import java.util.Map;
-
-import nl.cwi.reo.interpret.expressions.ValueExpression;
-import nl.cwi.reo.semantics.api.Expression;
 
 public interface IntegerExpression extends ValueExpression {
 	

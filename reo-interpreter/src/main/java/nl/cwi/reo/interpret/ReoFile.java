@@ -6,16 +6,13 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
 
-import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.blocks.Assembly;
+import nl.cwi.reo.interpret.components.ComponentDefinition;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.semantics.ComponentList;
-import nl.cwi.reo.interpret.systems.ReoSystem;
 import nl.cwi.reo.semantics.api.Evaluable;
 import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Semantics;
 
-public final class ReoFile<T extends Semantics<T>> implements Evaluable<Assembly<T>> {
+public final class ReoFile<T extends Semantics<T>> implements Evaluable<Definitions<T>> {
 	
 	/**
 	 * Section.
@@ -40,9 +37,9 @@ public final class ReoFile<T extends Semantics<T>> implements Evaluable<Assembly
 	/**
 	 * Main component.
 	 */
-	private final ReoSystem<T> cexpr;
+	private final ComponentDefinition<T> cexpr;
 	
-	public ReoFile(String section, List<String> imports, String name, ReoSystem<T> cexpr, Token token) {
+	public ReoFile(String section, List<String> imports, String name, ComponentDefinition<T> cexpr, Token token) {
 		if (section == null || imports == null || name == null || cexpr == null || token == null)
 			throw new NullPointerException();
 		this.section = section;
@@ -60,7 +57,7 @@ public final class ReoFile<T extends Semantics<T>> implements Evaluable<Assembly
 		return section.equals("") ? name : section + "." + name; 
 	}
 	
-	public ReoSystem<T> getComponent() {
+	public ComponentDefinition<T> getComponent() {
 		return cexpr;
 	}
 	
@@ -69,10 +66,10 @@ public final class ReoFile<T extends Semantics<T>> implements Evaluable<Assembly
 	}
 
 	@Override
-	public Assembly<T> evaluate(Map<String, Expression> params) throws CompilationException {
+	public Definitions<T> evaluate(Map<String, Expression> params) {
 		Map<String, Expression> definitions = new HashMap<String, Expression>();
 		definitions.put(getName(), cexpr.evaluate(params));
-		return new Assembly<T>(new Definitions(definitions), new ComponentList<T>());
+		return new Definitions<T>(definitions);
 	}
 	
 	@Override

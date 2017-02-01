@@ -14,13 +14,13 @@ import org.junit.Test;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.expressions.ValueList;
-import nl.cwi.reo.interpret.integers.IntegerExpression;
-import nl.cwi.reo.interpret.integers.IntegerValue;
 import nl.cwi.reo.interpret.integers.IntegerVariable;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.interpret.variables.VariableName;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.interpret.variables.VariableRange;
+import nl.cwi.reo.semantics.api.IntegerExpression;
+import nl.cwi.reo.semantics.api.IntegerValue;
 import nl.cwi.reo.semantics.api.Port;
 import nl.cwi.reo.semantics.api.PortType;
 import nl.cwi.reo.semantics.api.PrioType;
@@ -32,17 +32,17 @@ public class SignatureExpressionTest {
 	   ParameterList params = new ParameterList();
 	   NodeList nodes = new NodeList();
 	   Token token = new CommonToken(0);
-	   nodes.add(new Node(new VariableName("a", token), NodeType.SOURCE, new TypeTag("int")));
-	   nodes.add(new Node(new VariableName("b", token), NodeType.SINK, new TypeTag("bool")));
-	   nodes.add(new Node(new VariableName("c", token), NodeType.MIXED, new TypeTag("string")));
+	   nodes.add(new Node(new Variable("a", token), NodeType.SOURCE, new TypeTag("int")));
+	   nodes.add(new Node(new Variable("b", token), NodeType.SINK, new TypeTag("bool")));
+	   nodes.add(new Node(new Variable("c", token), NodeType.MIXED, new TypeTag("string")));
 	   SignatureExpression e = new SignatureExpression(params, nodes, token);
 	   
 	   ValueList values = new ValueList();
-	   List<VariableName> newnodes = new ArrayList<VariableName>();
-	   newnodes.add(new VariableName("x", token));
-	   newnodes.add(new VariableName("y", token));
-	   newnodes.add(new VariableName("z", token));
-	   VariableNameList iface = new VariableNameList(newnodes, token);
+	   List<Variable> newnodes = new ArrayList<Variable>();
+	   newnodes.add(new Variable("x", token));
+	   newnodes.add(new Variable("y", token));
+	   newnodes.add(new Variable("z", token));
+	   VariableList iface = new VariableList(newnodes, token);
 	   SignatureConcrete s = null;
 	   boolean hasException = false;
 	   
@@ -68,18 +68,18 @@ public class SignatureExpressionTest {
 	   List<List<IntegerExpression>> indices = new ArrayList<List<IntegerExpression>>();
 	   List<IntegerExpression> rng = new ArrayList<IntegerExpression>();
 	   rng.add(new IntegerValue(1));
-	   rng.add(new IntegerVariable(new VariableName("k", token)));
+	   rng.add(new IntegerVariable(new Variable("k", token)));
 	   indices.add(rng);
-	   Variable var = new VariableRange("a", indices, token);
+	   VariableExpression var = new VariableRange("a", indices, token);
 	   nodes.add(new Node(var, NodeType.SOURCE, new TypeTag("int")));
 	   SignatureExpression e = new SignatureExpression(params, nodes, token);
 
 	   ValueList values = new ValueList();
-	   List<VariableName> newnodes = new ArrayList<VariableName>();
-	   newnodes.add(new VariableName("x", token));
-	   newnodes.add(new VariableName("y", token));
-	   newnodes.add(new VariableName("z", token));
-	   VariableNameList iface = new VariableNameList(newnodes, token);
+	   List<Variable> newnodes = new ArrayList<Variable>();
+	   newnodes.add(new Variable("x", token));
+	   newnodes.add(new Variable("y", token));
+	   newnodes.add(new Variable("z", token));
+	   VariableList iface = new VariableList(newnodes, token);
 	   SignatureConcrete s = null;
 	   boolean hasException = false;
 	   

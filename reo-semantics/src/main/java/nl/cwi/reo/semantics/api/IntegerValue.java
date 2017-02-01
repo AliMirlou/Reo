@@ -1,13 +1,7 @@
-package nl.cwi.reo.interpret.integers;
+package nl.cwi.reo.semantics.api;
 
 import java.util.Map;
 import java.util.Objects;
-
-import org.antlr.v4.runtime.Token;
-
-import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.booleans.BooleanValue;
-import nl.cwi.reo.semantics.api.Expression;
 
 public final class IntegerValue implements IntegerExpression {
 	
@@ -49,15 +43,15 @@ public final class IntegerValue implements IntegerExpression {
 		return new IntegerValue(v1.n * v2.n);
 	}
 	
-	public static IntegerValue division(IntegerValue v1, IntegerValue v2, Token operator) {
+	public static IntegerValue division(IntegerValue v1, IntegerValue v2) throws Exception {
 		if (v2.n == 0) 
-			throw new CompilationException(operator, "Cannot divide by zero.");
+			throw new Exception("Cannot divide by zero.");
 		return new IntegerValue(v1.n / v2.n);
 	}
 	
-	public static IntegerValue remainder(IntegerValue v1, IntegerValue v2, Token operator) {
+	public static IntegerValue remainder(IntegerValue v1, IntegerValue v2) throws Exception {
 		if (v2.n == 0) 
-			throw new CompilationException(operator, "Modulus cannot be zero.");
+			throw new Exception("Modulus cannot be zero.");
 		return new IntegerValue(v1.n % v2.n);
 	}
 	

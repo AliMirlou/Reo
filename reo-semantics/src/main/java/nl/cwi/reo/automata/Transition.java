@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import nl.cwi.reo.semantics.api.Evaluable;
+import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Port;
 
 /**
@@ -16,7 +18,7 @@ import nl.cwi.reo.semantics.api.Port;
  * If the transition label type L is immutable, then Transition<L> is immutable too.
  * @param L 	transition label type
  */
-public final class Transition<L extends Label<L>> {
+public final class Transition<L extends Label<L>> implements Evaluable<Transition<L>> {
 
 	/**
 	 * Source state.
@@ -149,13 +151,13 @@ public final class Transition<L extends Label<L>> {
 	 * @param params	parameters
 	 * @return Evaluated label.
 	 */
-	public Transition<L> evaluate(Map<String, String> params) {
+	public Transition<L> evaluate(Map<String, Expression> params) {
 		return new Transition<L>(q1, q2, N, lbl.evaluate(params));
 	}
 	
 	@Override 
 	public String toString() { 
-		return "(" + q1 + "," + N + "," + lbl + "," + q2 + ")";
+		return q1 + " -> " + q2 + "\t:" + N + ", " + lbl;
 	}
 	
 	@Override

@@ -13,7 +13,7 @@ public class Links {
 	 * @param links		maps external ports to new ports.
 	 * @param joins		maps external ports to new ports.
 	 */
-	public static Map<Port, Port> connect(Map<Port, Port> links, Map<Port, Port> joins) {
+	public static Map<Port, Port> reconnect(Map<Port, Port> links, Map<Port, Port> joins) {
 		Map<Port, Port> newlinks = new HashMap<Port, Port>();
 		for (Map.Entry<Port, Port> link : links.entrySet()) {
 			Port x = link.getValue();

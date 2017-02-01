@@ -1,113 +1,178 @@
 package nl.cwi.reo.interpret.blocks;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.booleans.BooleanValue;
-import nl.cwi.reo.interpret.integers.IntegerValue;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.strings.StringValue;
-import nl.cwi.reo.interpret.systems.ReoSystemValue;
+import nl.cwi.reo.interpret.variables.Variable;
+import nl.cwi.reo.semantics.api.Connector;
 import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.api.Port;
 import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.api.SubComponent;
 
-public class Body<T extends Semantics<T>> implements ReoBlock<T> {
+/**
+ * A Body is a block whose statements evaluated into a set of definitions and 
+ * a connector. 
+ * 
+ * A body is an immutable object.
+ * @param <T> type of semantics objects
+ */
+public final class Body<T extends Semantics<T>> implements Block<T> {
 	
 	/**
-	 * List of statements.
+	 * Definitions.
 	 */
-	public List<ReoBlock<T>> stmts;
+	private final Definitions<T> definitions;
+	
+	/**
+	 * Instances.
+	 */
+	private final Connector<T> connector;
 
 	/**
-	 * Constructs a body of components and definitions.
-	 * @param components	set of component expressions
-	 * @param definitions	list of definitions
+	 * Constructs an empty body of components and definitions.
 	 */
-	public Body(List<ReoBlock<T>> stmts) {
-		if (stmts == null)
-			throw new NullPointerException();
-		for (ReoBlock<T> stmt : stmts)
-			if (stmt == null)
-				throw new NullPointerException();
-		this.stmts = stmts;
+	public Body() {
+		this.definitions = new Definitions<T>();
+		this.connector = new Connector<T>();
 	}
 	
 	/**
-	 * Evaluates this body for a particular parameter assignment.
-	 * @param params			parameter assignment
-	 * @return Concrete instance of this body.
-	 * @throws Exception if not all required parameters are provided.
+	 * Constructs a body consisting of a set of definitions and an ordered 
+	 * list of subcomponents that are composed via a given operator.
+	 * @param definitions		set of definitions
+	 * @param subcomponents		ordered list of subcomponents
+	 * @param operator			name of composition operator
 	 */
-	public ReoBlock<T> evaluate(Map<String, Expression> params) throws CompilationException {	
-		
-//		System.out.println("[info] Evaluating " + this);
+	public Body(Definitions<T> definitions, List<SubComponent<T>> subcomponents, String operator) {
+		if (definitions == null || subcomponents == null)
+			throw new NullPointerException();
+		this.definitions = new Definitions<T>(definitions);
+		this.connector = new Connector<T>(operator, subcomponents);
+	}
+	
+	/**
+	 * Constructs a body consisting of a set of definitions and a connector.
+	 * @param definitions	set of definitions
+	 * @param connector		connector
+	 */
+	public Body(Definitions<T> definitions, Connector<T> connector) {
+		if (definitions == null || connector == null)
+			throw new NullPointerException();
+		this.definitions = new Definitions<T>(definitions);
+		this.connector = connector;
+	}
+	
+	/**
+	 * Gets the set of definitions in this body.
+	 * @return set of definitions in this body
+	 */
+	public Map<String, Expression> getDefinitions() {
+		return Collections.unmodifiableMap(definitions);
+	}
 
-		Definitions definitions = new Definitions(params);
+	/**
+	 * Gets the set of unifications in this body, i.e., definitions 
+	 * that unify two variables.
+	 * @return set of unifications in this body
+	 */
+	public Map<String, Expression> getUnifications() {
+		return Collections.unmodifiableMap(definitions.getUnifications());
+	}
+	
+	/**
+	 * Gets the connector of this body.
+	 * @return connector of this body
+	 */
+	public Connector<T> getConnector() {
+		return connector;
+	}
+	
+	/**
+	 * Removes the assignment of a given variable from the definitions in this body.
+	 * @param x		name of the variable.
+	 * @return This body without a definition for x.
+	 */
+	public Body<T> remove(String x) {
+		Definitions<T> defs = new Definitions<T>(definitions);
+		defs.remove(x);
+		return new Body<T>(defs, connector);
+	}
+	
+	/**
+	 * Composes a set of bodies into a single body.
+	 * @param progs		set of component instances
+	 */
+	public static <T extends Semantics<T>> Body<T> compose(String operator, List<Body<T>> bodies) {
+		Definitions<T> defs = new Definitions<T>();
+		List<Connector<T>> comps = new ArrayList<Connector<T>>();
+		for (Body<T> body : bodies) {
+			defs.putAll(body.definitions);
+			comps.add(body.getConnector());
+		}
+		return new Body<T>(defs, Connector.compose(operator, comps));
+	}
+	
+	/**
+	 * Instantiates this body by dropping all definitions (except 
+	 * necessary unifications), joining unified ports, hiding 
+	 * internal ports, and renaming external ports.
+	 * @param iface		map assigning a new port to every external port 
+	 * (i.e., this map implicitly defines all internal ports)
+	 * @return an instantiated body.
+	 */
+	public Body<T> instantiate(Map<Port, Port> iface) {
+		Definitions<T> defs = new Definitions<T>();
+		Map<Port, Port> _iface = new HashMap<Port, Port>(iface);		
 		
-		List<ReoBlock<T>> stmts = new ArrayList<ReoBlock<T>>();
-		List<ReoBlock<T>> stmts_p = new ArrayList<ReoBlock<T>>(this.stmts);	
-		List<Assembly<T>> progs = new ArrayList<Assembly<T>>(); 
-		boolean isProgramValue = true;
-		boolean loop = true;
-		
-		while (loop) {
-			
-			stmts = new ArrayList<ReoBlock<T>>(stmts_p);
-			stmts_p = new ArrayList<ReoBlock<T>>();			
-			progs = new ArrayList<Assembly<T>>();
-			isProgramValue = true;
-			loop = false;
-			
-			for (ReoBlock<T> s : stmts) {			
+		// Collect all necessary unifications, and rename the variables in these definitions.
+		for (Map.Entry<String, Expression> defn : this.definitions.entrySet()) {
+			if (defn.getValue() instanceof Variable) {
+				String a = defn.getKey();
+				String b = ((Variable)defn.getValue()).getName();
 				
-				ReoBlock<T> s_p = s.evaluate(definitions);
-				stmts_p.add(s_p);
+				Port a_new = iface.get(new Port(a));
+				Port b_new = iface.get(new Port(b));
 				
-				if (s_p instanceof Assembly) {
-					progs.add((Assembly<T>)s_p);
-					Map<String, Expression> progDefs = ((Assembly<T>)s_p).getDefinitions();
-					for (Map.Entry<String, Expression> def : progDefs.entrySet()) {
-						if (!definitions.containsKey(def.getKey())) {
-							definitions.put(def.getKey(), def.getValue());
-							if (def.getValue() instanceof BooleanValue) loop = true;
-							if (def.getValue() instanceof IntegerValue) loop = true;
-							if (def.getValue() instanceof StringValue) loop = true;
-							if (def.getValue() instanceof ReoSystemValue) loop = true;
-						} else {
-							if (def.getValue().equals(definitions.get(def.getKey())))
-								throw new CompilationException(null, null);
-							// TODO If redefined evaluates to false: throw an error.
-						}
+				if (a_new != null) {
+					if (b_new != null) {
+						String x = a_new.getName();
+						Variable y = new Variable(b_new.getName(), null);
+						defs.put(x, y);
+					} else {
+						_iface.put(new Port(b), a_new);
 					}
 				} else {
-					isProgramValue = false;
+					if (b_new != null) {
+						_iface.put(new Port(a), b_new);
+					} else {
+						Port ahidden = new Port(a);
+						ahidden.hide();
+						_iface.put(new Port(b), new Port(a).hide());
+					}
 				}
 			}
-			
 		}
 		
-		ReoBlock<T> prog = null;
-		
-		if (isProgramValue) {
-			prog = new Assembly<T>().compose(progs);
-		} else {
-			prog = new Body<T>(stmts_p);
-		}
-		
-		System.out.println("[info] " + this + " evaluates to ");
-		System.out.println("       " + prog + " using " + params.keySet());
-		return prog;
+		return new Body<T>(defs, connector.reconnect(_iface));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Body<T> evaluate(Map<String, Expression> params) {
+		Definitions<T> definitions_p = definitions.evaluate(params);
+		// TODO Possibly local variables in this definition get instantiated by variables from the context.
+		// TODO Add code to evaluate semantics too.
+		return new Body<T>(definitions_p, connector);
+	}
 	@Override
 	public String toString() {
-		String s = "{";
-		Iterator<ReoBlock<T>> stmt = stmts.iterator();
-		while (stmt.hasNext()) 
-			s += stmt.next() + (stmt.hasNext() ? ", " : "");
-		return s + "}";
+		return "" + definitions + connector;
 	}
 }

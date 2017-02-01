@@ -3,21 +3,22 @@ package nl.cwi.reo.interpret.booleans;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
+import nl.cwi.reo.interpret.variables.VariableExpression;
+import nl.cwi.reo.semantics.api.BooleanExpression;
 import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.interpret.variables.Variable;
 
 public class BooleanVariable implements BooleanExpression {
 
 	/**
 	 * Variable name.
 	 */
-	private Variable var;
+	private VariableExpression var;
 
 	/**
 	 * Constructs a natural number from a string.
 	 * @param s 	string representation of a natural number
 	 */
-	public BooleanVariable(Variable var) {
+	public BooleanVariable(VariableExpression var) {
 		if (var == null)
 			throw new NullPointerException();
 		this.var = var;
@@ -33,8 +34,8 @@ public class BooleanVariable implements BooleanExpression {
 		Expression e = var.evaluate(params);
 		if (e instanceof BooleanExpression) {
 			return (BooleanExpression)e;
-		} else if (e instanceof Variable) {
-			return new BooleanVariable((Variable)e);
+		} else if (e instanceof VariableExpression) {
+			return new BooleanVariable((VariableExpression)e);
 		} 
 		return this;
 	}

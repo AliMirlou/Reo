@@ -14,10 +14,9 @@ import java.util.Map;
 public interface Evaluable<T> {
 	
 	/**
-	 * Substitutes expressions for free variables in this expression.
-	 * @param params			parameter assignment
+	 * Substitutes free variables  by an expression.
+	 * @param params			assignment of expressions to variables
 	 * @return new expression with variables substituted.
-	 * @throws CompilationException if any substituted expression is of the wrong type.
 	 */
 	public T evaluate(Map<String, Expression> params);
 }

@@ -3,9 +3,10 @@ package nl.cwi.reo.seepageautomata;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 
 import nl.cwi.reo.automata.Automaton;
+import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Port;
 import nl.cwi.reo.semantics.api.Semantics;
 import nl.cwi.reo.semantics.api.SemanticsType;
@@ -28,7 +29,7 @@ public class SeepageAutomaton extends Automaton<SeepageFunction> implements Sema
 	}
 	
 	@Override
-	public SeepageAutomaton getNode(SortedSet<Port> node) {
+	public SeepageAutomaton getNode(Set<Port> node) {
 		return new SeepageAutomaton(super.getNode(node));
 	}
 
@@ -38,7 +39,7 @@ public class SeepageAutomaton extends Automaton<SeepageFunction> implements Sema
 	}
 
 	@Override
-	public SeepageAutomaton evaluate(Map<String, String> params) {
+	public SeepageAutomaton evaluate(Map<String, Expression> params) {
 		return new SeepageAutomaton(super.evaluate(params));
 	}
 

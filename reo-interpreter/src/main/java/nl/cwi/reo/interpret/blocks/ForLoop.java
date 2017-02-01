@@ -5,22 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.integers.IntegerExpression;
-import nl.cwi.reo.interpret.integers.IntegerValue;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.variables.VariableName;
+import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.api.IntegerExpression;
+import nl.cwi.reo.semantics.api.IntegerValue;
 import nl.cwi.reo.semantics.api.Semantics;
 
 /**
  * A parameterized for loop of a set {link java.util.Set}&lt;{link nl.cwi.reo.parse.Component}&gt; of parameterized components.
  */
-public class ForLoop<T extends Semantics<T>> implements ReoBlock<T> {
+public class ForLoop<T extends Semantics<T>> implements Block<T> {
 
 	/**
 	 * Name of the iterated parameter.
 	 */
-	public VariableName parameter;
+	public Variable parameter;
 
 	/**
 	 * Lower bound of iteration.
@@ -34,7 +34,7 @@ public class ForLoop<T extends Semantics<T>> implements ReoBlock<T> {
 	/**
 	 * Iterated subprogram definition.
 	 */
-	public ReoBlock<T> reoBlock;
+	public Block<T> block;
 
 	/**
 	 * Constructs a parameterized for loop. 
@@ -44,13 +44,13 @@ public class ForLoop<T extends Semantics<T>> implements ReoBlock<T> {
 	 * @param upper			expression defining the upper iteration bound
 	 * @param subprogram	iterated subprogram definition
 	 */
-	public ForLoop(VariableName parameter, IntegerExpression lower, IntegerExpression upper, ReoBlock<T> body) {
+	public ForLoop(Variable parameter, IntegerExpression lower, IntegerExpression upper, Block<T> body) {
 		if (parameter == null || lower == null || upper == null || body == null)
 			throw new NullPointerException();
 		this.parameter = parameter;
 		this.lower = lower;
 		this.upper = upper;
-		this.reoBlock = body;
+		this.block = body;
 	}
 	
 	/**
@@ -60,9 +60,9 @@ public class ForLoop<T extends Semantics<T>> implements ReoBlock<T> {
 	 * @throws Exception if the provided parameters do not match the signature of this program.
 	 */
 	@Override
-	public ReoBlock<T> evaluate(Map<String, Expression> params) throws CompilationException {
+	public Block<T> evaluate(Map<String, Expression> params) throws CompilationException {
 		
-		if (params.get(parameter) != null)
+		if (params.get(parameter.getName()) != null)
 			throw new CompilationException(parameter.getToken(), "Parameter " + parameter + " is already used.");
 		
 		IntegerExpression x = lower.evaluate(params);
@@ -76,33 +76,31 @@ public class ForLoop<T extends Semantics<T>> implements ReoBlock<T> {
 				
 			// Iterate to find all concrete components. 
 			boolean isProgram = true;
-			Definitions defns = new Definitions(params);
-			List<ReoBlock<T>> bodies = new ArrayList<ReoBlock<T>>();
-			List<Assembly<T>> progs = new ArrayList<Assembly<T>>();
+			Definitions<T> defns = new Definitions<T>(params);
+			List<Block<T>> bodies = new ArrayList<Block<T>>();
+			List<Body<T>> progs = new ArrayList<Body<T>>();
 			for (int i = a; i <= b; i++) {
 				defns.put(parameter.getName(), new IntegerValue(Integer.valueOf(i)));
-				ReoBlock<T> e = reoBlock.evaluate(defns);
+				Block<T> e = block.evaluate(defns);
 				bodies.add(e);
-				if (e instanceof Assembly) {
-					progs.add((Assembly<T>)e);
+				if (e instanceof Body) {
+					progs.add((Body<T>)e);
 				} else {
 					isProgram = false;
 				}
 			}
 			
-			if (isProgram) {
-				Assembly<T> prog = new Assembly<T>();
-				return prog.compose(progs).remove(parameter);
-			}
+			if (isProgram) 
+				return Body.compose("", progs).remove(parameter.getName());
 			
-			return new Body<T>(bodies);
+			return new BlockList<T>(bodies);
 		}
 		
-		return new ForLoop<T>(parameter, x, y, reoBlock.evaluate(params));
+		return new ForLoop<T>(parameter, x, y, block.evaluate(params));
 	}
 	
 	@Override
 	public String toString() {
-		return "for " + parameter + "=" + lower + ".." + upper + reoBlock;
+		return "for " + parameter + "=" + lower + ".." + upper + block;
 	}
 }

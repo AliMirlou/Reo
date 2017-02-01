@@ -4,22 +4,22 @@ import java.util.Iterator;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.expressions.ExpressionList;
-import nl.cwi.reo.interpret.semantics.ComponentList;
+import nl.cwi.reo.interpret.semantics.Definitions;
+import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.interpret.variables.VariableName;
-import nl.cwi.reo.interpret.variables.VariableNameList;
+import nl.cwi.reo.interpret.variables.VariableList;
+import nl.cwi.reo.semantics.api.Connector;
 import nl.cwi.reo.semantics.api.Expression;
 import nl.cwi.reo.semantics.api.Semantics;
 
-public final class Definition<T extends Semantics<T>> implements ReoBlock<T> {
+public final class Definition<T extends Semantics<T>> implements Block<T> {
 
-	private final Variable var;
+	private final VariableExpression var;
 	
 	private final Expression val;
 	
-	public Definition(Variable var, Expression val) {
+	public Definition(VariableExpression var, Expression val) {
 		if (var == null || val == null)
 			throw new NullPointerException();
 		this.var = var;
@@ -27,31 +27,31 @@ public final class Definition<T extends Semantics<T>> implements ReoBlock<T> {
 	}
 
 	@Override
-	public ReoBlock<T> evaluate(Map<String, Expression> params) {
+	public Block<T> evaluate(Map<String, Expression> params) {
 		
-		ReoBlock<T> prog = null;
+		Block<T> prog = null;
 
 		Expression e = var.evaluate(params);
-		if (!(e instanceof Variable))
+		if (!(e instanceof VariableExpression))
 			e = var;
-		Variable var_p = (Variable)e;
+		VariableExpression var_p = (VariableExpression)e;
 		Expression val_p = val.evaluate(params);
 		
-		if (var_p instanceof VariableName) {
+		if (var_p instanceof Variable) {
 			if (val_p instanceof Expression) {
-				Definitions definitions = new Definitions();
-				definitions.put(((VariableName)var_p).getName(), (Expression)val_p);
-				prog = new Assembly<T>(definitions, new ComponentList<T>());
+				Definitions<T> definitions = new Definitions<T>();
+				definitions.put(((Variable)var_p).getName(), (Expression)val_p);
+				prog = new Body<T>(definitions, new Connector<T>());
 			} else if (val_p instanceof ExpressionList) {
 				throw new CompilationException(var.getToken(), "Value " + val_p + " must be of type expression.");	
 			} 
-		} else if (var_p instanceof VariableNameList) {	
+		} else if (var_p instanceof VariableList) {	
 			if (val_p instanceof ExpressionList) {	
-				Definitions definitions = new Definitions();
-				Iterator<VariableName> var = ((VariableNameList) var_p).getList().iterator();
+				Definitions<T> definitions = new Definitions<T>();
+				Iterator<Variable> var = ((VariableList) var_p).getList().iterator();
 				Iterator<Expression> exp = ((ExpressionList)val_p).iterator();				
 				while (var.hasNext() && exp.hasNext()) definitions.put(var.next().getName(), exp.next());
-				prog = new Assembly<T>(definitions, new ComponentList<T>());
+				prog = new Body<T>(definitions, new Connector<T>());
 				
 			} else if (val_p instanceof Expression) {
 				throw new CompilationException(var.getToken(), "Value " + val_p + " must be of type list.");				
