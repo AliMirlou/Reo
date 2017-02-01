@@ -1,4 +1,6 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.expressions;
+
+import nl.cwi.reo.semantics.Evaluable;
 
 /**
  * An abstract representation of a expression in the Reo language. Examples of expressions include 

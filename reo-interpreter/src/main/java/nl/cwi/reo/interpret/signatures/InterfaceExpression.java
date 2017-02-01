@@ -12,7 +12,7 @@ import nl.cwi.reo.interpret.expressions.Expressions;
 import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.interpret.variables.VariableList;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public final class InterfaceExpression extends ArrayList<InterfaceNode> implements Expressions {
 	

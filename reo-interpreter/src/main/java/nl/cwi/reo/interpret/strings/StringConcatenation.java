@@ -3,7 +3,9 @@ package nl.cwi.reo.interpret.strings;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.StringExpression;
+import nl.cwi.reo.semantics.expressions.StringValue;
 
 public final class StringConcatenation implements StringExpression {
 	

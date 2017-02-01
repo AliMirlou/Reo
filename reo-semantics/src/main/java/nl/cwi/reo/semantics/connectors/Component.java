@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,14 +8,31 @@ import java.util.Map;
 
 import org.stringtemplate.v4.ST;
 
-//import nl.cwi.reo.interpret.strings.StringValue;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
 
+/**
+ * An atomic Reo component consisting of its Reo semantics together with an 
+ * optional reference to source code.
+ * 
+ * @param <T> Reo semantics type
+ */
 public final class Component<T extends Semantics<T>> implements SubComponent<T> {
 	
+	/**
+	 * Semantics object.
+	 */
 	private final T semantics;
 	
+	/**
+	 * Reference to source code.
+	 */
 	private final SourceCode source;
 	
+	/**
+	 * Set of links.
+	 */
 	private final Map<Port, Port> links;
 	
 	/**
@@ -45,6 +62,12 @@ public final class Component<T extends Semantics<T>> implements SubComponent<T> 
 		this.links = Collections.unmodifiableMap(links);
 	}
 	
+	/**
+	 * Constructs a new atomic component.
+	 * @param semantics 	semantics
+	 * @param source		reference to source code
+	 * @param links			set of links
+	 */
 	public Component(T semantics, SourceCode source, Map<Port, Port> links) {
 		this.semantics = semantics;
 		this.source = source;
@@ -52,7 +75,7 @@ public final class Component<T extends Semantics<T>> implements SubComponent<T> 
 	}
 	
 	/**
-	 * Gets the semantics object of this atomic componnet.
+	 * Gets the semantics object of this atomic component.
 	 * @return Semantics object
 	 */
 	public T getSemantics() {

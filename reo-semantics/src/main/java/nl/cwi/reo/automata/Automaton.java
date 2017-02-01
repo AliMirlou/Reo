@@ -19,9 +19,9 @@ import java.util.TreeSet;
 
 import org.stringtemplate.v4.ST;
 
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -290,15 +290,13 @@ public class Automaton<L extends Label<L>> implements Evaluable<Automaton<L>> {
 		
 		return new Automaton<L>(Q, P, T, initial, lbl);
 	}
-	
-
-	
+		
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		ST st = new ST("`<`<interface>{\n  <transitions; separator=\"\n\">\n}");
+		ST st = new ST("(<interface; separator=\", \">){\n  <transitions; separator=\"\n\">\n}");
 				
 		List<Transition<L>> transitions = new ArrayList<Transition<L>>();
 		for (State q : this.states) 

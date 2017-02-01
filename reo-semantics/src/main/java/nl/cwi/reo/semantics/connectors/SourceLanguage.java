@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 public enum SourceLanguage {
 	JAVA, C, FORTRAN

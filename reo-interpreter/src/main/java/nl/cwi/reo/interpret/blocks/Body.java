@@ -6,22 +6,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.stringtemplate.v4.ST;
+
 import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.semantics.api.Connector;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.Semantics;
-import nl.cwi.reo.semantics.api.SubComponent;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.connectors.Connector;
+import nl.cwi.reo.semantics.connectors.SubComponent;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 /**
- * A Body is a block whose statements evaluated into a set of definitions and 
+ * <p>A list statements that evaluated into a set of definitions and 
  * a connector. 
  * 
- * A body is an immutable object.
+ * <p>A body is an immutable object.
  * @param <T> type of semantics objects
  */
-public final class Body<T extends Semantics<T>> implements Block<T> {
+public final class Body<T extends Semantics<T>> implements BlockExpression<T> {
 	
 	/**
 	 * Definitions.
@@ -171,8 +173,15 @@ public final class Body<T extends Semantics<T>> implements Block<T> {
 		// TODO Add code to evaluate semantics too.
 		return new Body<T>(definitions_p, connector);
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return "" + definitions + connector;
+		ST st = new ST("{\n  <definitions><if(connector)>\n  <connector><endif>\n}");
+		st.add("definitions", definitions);
+		st.add("connector", connector);
+		return st.render();
 	}
 }

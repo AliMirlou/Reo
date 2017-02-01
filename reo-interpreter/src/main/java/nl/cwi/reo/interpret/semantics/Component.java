@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.Semantics;
-import nl.cwi.reo.semantics.api.SourceCode;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.connectors.SourceCode;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public final class Component<T extends Semantics<T>> extends HashMap<Port, Port> implements Evaluable<Component<T>> {
 	

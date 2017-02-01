@@ -18,7 +18,7 @@ target  : 'Java' ;
       //| 'URL' ;
 
 // Blocks
-block   : ID? '{' stmt* '}' ;
+block   : strg? '{' stmt* '}' ;
 stmt    : expr '=' expr                                          # stmt_equation
         | var rsys                                               # stmt_compdefn
         | 'struct' ID '{' param (',' param)* '}'                 # stmt_struct

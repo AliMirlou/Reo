@@ -1,7 +1,9 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import nl.cwi.reo.semantics.Port;
 
 /**
  * This class provides two operations on sets of links. 

@@ -12,7 +12,7 @@ import com.beust.jcommander.Parameter;
 import nl.cwi.reo.interpret.Interpreter;
 import nl.cwi.reo.interpret.InterpreterPA;
 import nl.cwi.reo.portautomata.PortAutomaton;
-import nl.cwi.reo.semantics.api.Connector;
+import nl.cwi.reo.semantics.connectors.Connector;
 
 /**
  * A compiler for the coordination language Reo.

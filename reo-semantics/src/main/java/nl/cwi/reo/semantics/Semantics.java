@@ -1,9 +1,11 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public interface Semantics<T> {
 	

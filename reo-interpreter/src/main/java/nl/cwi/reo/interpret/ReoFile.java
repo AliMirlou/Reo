@@ -6,11 +6,11 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
 
-import nl.cwi.reo.interpret.components.ComponentDefinition;
+import nl.cwi.reo.interpret.components.ComponentExpression;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public final class ReoFile<T extends Semantics<T>> implements Evaluable<Definitions<T>> {
 	
@@ -37,9 +37,9 @@ public final class ReoFile<T extends Semantics<T>> implements Evaluable<Definiti
 	/**
 	 * Main component.
 	 */
-	private final ComponentDefinition<T> cexpr;
+	private final ComponentExpression<T> cexpr;
 	
-	public ReoFile(String section, List<String> imports, String name, ComponentDefinition<T> cexpr, Token token) {
+	public ReoFile(String section, List<String> imports, String name, ComponentExpression<T> cexpr, Token token) {
 		if (section == null || imports == null || name == null || cexpr == null || token == null)
 			throw new NullPointerException();
 		this.section = section;
@@ -57,7 +57,7 @@ public final class ReoFile<T extends Semantics<T>> implements Evaluable<Definiti
 		return section.equals("") ? name : section + "." + name; 
 	}
 	
-	public ComponentDefinition<T> getComponent() {
+	public ComponentExpression<T> getComponent() {
 		return cexpr;
 	}
 	

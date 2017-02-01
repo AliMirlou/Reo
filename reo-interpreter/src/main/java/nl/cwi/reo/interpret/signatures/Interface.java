@@ -7,7 +7,7 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public final class Interface extends ArrayList<Variable> implements Expression {
 	

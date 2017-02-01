@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.expressions;
 
 import java.util.Map;
 
@@ -8,8 +8,8 @@ import java.util.Map;
  * definitions. 
  * On the contrary, a variable range a[1..3] does evaluate to a list: &lt;a[1],a[2],a[3]&gt;.
  */
-public interface ValueExpression extends Expression {
+public interface AtomicExpression extends Expression {
 	
-	public ValueExpression evaluate(Map<String, Expression> params);
+	public AtomicExpression evaluate(Map<String, Expression> params);
 
 }

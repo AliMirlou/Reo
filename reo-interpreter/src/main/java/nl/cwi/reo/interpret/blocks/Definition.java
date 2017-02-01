@@ -9,11 +9,11 @@ import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.interpret.variables.VariableList;
-import nl.cwi.reo.semantics.api.Connector;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.connectors.Connector;
+import nl.cwi.reo.semantics.expressions.Expression;
 
-public final class Definition<T extends Semantics<T>> implements Block<T> {
+public final class Definition<T extends Semantics<T>> implements Statement<T> {
 
 	private final VariableExpression var;
 	
@@ -27,9 +27,9 @@ public final class Definition<T extends Semantics<T>> implements Block<T> {
 	}
 
 	@Override
-	public Block<T> evaluate(Map<String, Expression> params) {
+	public Statement<T> evaluate(Map<String, Expression> params) {
 		
-		Block<T> prog = null;
+		Statement<T> prog = null;
 
 		Expression e = var.evaluate(params);
 		if (!(e instanceof VariableExpression))

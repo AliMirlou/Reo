@@ -4,7 +4,8 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.VariableExpression;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.StringExpression;
 
 public class StringVariable implements StringExpression {
 

@@ -1,11 +1,9 @@
-package nl.cwi.reo.interpret.strings;
+package nl.cwi.reo.semantics.expressions;
 
 import java.util.Map;
 import java.util.Objects;
 
-import nl.cwi.reo.semantics.api.Expression;
-
-public class StringValue implements StringExpression {
+public class StringValue implements StringExpression, GroundExpression {
 	
 	private final String str; 
 	

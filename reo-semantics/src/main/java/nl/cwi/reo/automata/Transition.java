@@ -9,9 +9,9 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 /**
  * A transition, labeled with a generic label of type L, that is used in a {@link nl.cwi.reo.automata.Automaton}.
@@ -157,7 +157,7 @@ public final class Transition<L extends Label<L>> implements Evaluable<Transitio
 	
 	@Override 
 	public String toString() { 
-		return q1 + " -> " + q2 + "\t:" + N + ", " + lbl;
+		return q1 + " -> " + q2 + " : " + N + ", " + lbl;
 	}
 	
 	@Override

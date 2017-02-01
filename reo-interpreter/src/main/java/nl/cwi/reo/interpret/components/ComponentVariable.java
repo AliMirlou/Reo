@@ -2,14 +2,14 @@ package nl.cwi.reo.interpret.components;
 
 import java.util.Map;
 
-import nl.cwi.reo.interpret.blocks.Block;
+import nl.cwi.reo.interpret.blocks.Statement;
 import nl.cwi.reo.interpret.expressions.ValueList;
 import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.VariableList;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
 
-public class ComponentVariable<T extends Semantics<T>> implements ComponentDefinition<T> {
+public class ComponentVariable<T extends Semantics<T>> implements ComponentExpression<T> {
 	
 	private VariableExpression var;
 	
@@ -23,7 +23,7 @@ public class ComponentVariable<T extends Semantics<T>> implements ComponentDefin
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Block<T> instantiate(ValueList values, VariableList iface) {
+	public Statement<T> instantiate(ValueList values, VariableList iface) {
 		return null;
 	}
 
@@ -32,10 +32,10 @@ public class ComponentVariable<T extends Semantics<T>> implements ComponentDefin
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public ComponentDefinition<T> evaluate(Map<String, Expression> params) {
+	public ComponentExpression<T> evaluate(Map<String, Expression> params) {
 		Expression e = var.evaluate(params);
-		if (e instanceof ComponentDefinition)
-			return (ComponentDefinition<T>)e;
+		if (e instanceof ComponentExpression)
+			return (ComponentExpression<T>)e;
 		else if (e instanceof VariableExpression)
 			return new ComponentVariable<T>((VariableExpression)e);
 		return this;	

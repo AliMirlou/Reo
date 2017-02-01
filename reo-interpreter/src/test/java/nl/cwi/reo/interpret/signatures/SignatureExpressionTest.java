@@ -19,11 +19,11 @@ import nl.cwi.reo.interpret.variables.VariableExpression;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.interpret.variables.VariableRange;
-import nl.cwi.reo.semantics.api.IntegerExpression;
-import nl.cwi.reo.semantics.api.IntegerValue;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.PortType;
-import nl.cwi.reo.semantics.api.PrioType;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.PortType;
+import nl.cwi.reo.semantics.PrioType;
+import nl.cwi.reo.semantics.expressions.IntegerExpression;
+import nl.cwi.reo.semantics.expressions.IntegerValue;
 
 public class SignatureExpressionTest {
 

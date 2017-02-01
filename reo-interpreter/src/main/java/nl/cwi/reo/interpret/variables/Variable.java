@@ -5,13 +5,13 @@ import java.util.Objects;
 
 import org.antlr.v4.runtime.Token;
 
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.ValueExpression;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.AtomicExpression;
 
 /**
  * An immutable implementation of a variable name.
  */
-public final class Variable implements VariableExpression, ValueExpression {
+public final class Variable implements VariableExpression, AtomicExpression {
 
 	private final String name;
 	
@@ -38,10 +38,10 @@ public final class Variable implements VariableExpression, ValueExpression {
 	}
 
 	@Override
-	public ValueExpression evaluate(Map<String, Expression> params) {
+	public AtomicExpression evaluate(Map<String, Expression> params) {
 		Expression e = params.get(name);
-		if (e instanceof ValueExpression) 
-			return (ValueExpression)e;
+		if (e instanceof AtomicExpression) 
+			return (AtomicExpression)e;
 		return this;
 	}
 	

@@ -3,8 +3,8 @@ package nl.cwi.reo.interpret.signatures;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class SignatureConcrete extends HashMap<Port, Port> {
 	

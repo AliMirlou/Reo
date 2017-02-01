@@ -1,6 +1,8 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics;
 
 import java.util.Map;
+
+import nl.cwi.reo.semantics.expressions.Expression;
 
 /**
  * A class implementing this interface can be evaluated in a set of parameters.

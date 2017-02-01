@@ -9,10 +9,10 @@ import java.util.SortedSet;
 import nl.cwi.reo.automata.Automaton;
 import nl.cwi.reo.automata.State;
 import nl.cwi.reo.automata.Transition;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.Semantics;
-import nl.cwi.reo.semantics.api.SemanticsType;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.SemanticsType;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class PortAutomaton extends Automaton<NullLabel> implements Semantics<PortAutomaton> {
 	

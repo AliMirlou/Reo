@@ -1,9 +1,9 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.expressions;
 
 import java.util.Map;
 import java.util.Objects;
 
-public final class BooleanValue implements BooleanExpression {
+public final class BooleanValue implements BooleanExpression, GroundExpression {
 	
 	private final boolean bool;
 	

@@ -4,12 +4,12 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.VariableExpression;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.PortType;
+import nl.cwi.reo.semantics.PrioType;
+import nl.cwi.reo.semantics.expressions.Expression;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.PortType;
-import nl.cwi.reo.semantics.api.PrioType;
 
 /**
  * An immutable node implementation.

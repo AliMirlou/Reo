@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics;
 
 public enum PrioType {
 	AMPERSANT, PLUS, NONE;

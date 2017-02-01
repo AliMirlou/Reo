@@ -4,9 +4,9 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.VariableExpression;
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.PrioType;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.PrioType;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class InterfaceNode implements Evaluable<InterfaceNode> {
 	

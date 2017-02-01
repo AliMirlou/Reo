@@ -13,7 +13,7 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 import nl.cwi.reo.portautomata.NullLabel;
-import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.Port;
 
 public class AutomatonTest {
 

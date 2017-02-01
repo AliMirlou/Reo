@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +9,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.stringtemplate.v4.ST;
+
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.PortType;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 /**
  * <p>The semantics of Reo connectors specified in .treo files.
@@ -233,8 +238,7 @@ public final class Connector<T extends Semantics<T>> implements SubComponent<T> 
 					}
 					break;
 				default:
-					System.out.println("IO type of ports of atomic components must be known.");
-					break;
+					throw new RuntimeException("Port type must be input or output.");
 				}
 				
 				links.put(p, pi);

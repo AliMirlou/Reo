@@ -1,9 +1,9 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.expressions;
 
 import java.util.Map;
 import java.util.Objects;
 
-public final class IntegerValue implements IntegerExpression {
+public final class IntegerValue implements IntegerExpression, GroundExpression {
 	
 	/**
 	 * Natural number.

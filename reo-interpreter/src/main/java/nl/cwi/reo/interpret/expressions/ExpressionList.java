@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.ValueExpression;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.AtomicExpression;
 
 public class ExpressionList extends ArrayList<Expression> implements Expressions {
 	
@@ -31,12 +31,12 @@ public class ExpressionList extends ArrayList<Expression> implements Expressions
 	public Expressions evaluate(Map<String, Expression> params) {
 		boolean isValueList = true;
 		List<Expression> entries = new ArrayList<Expression>();
-		List<ValueExpression> values = new ArrayList<ValueExpression>();
+		List<AtomicExpression> values = new ArrayList<AtomicExpression>();
 		for (Expression e : this) {
 			Expression e_p = e.evaluate(params);
 			entries.add(e_p);
-			if (e_p instanceof ValueExpression) {
-				values.add((ValueExpression)e_p);
+			if (e_p instanceof AtomicExpression) {
+				values.add((AtomicExpression)e_p);
 			} else {
 				isValueList = false;
 			}

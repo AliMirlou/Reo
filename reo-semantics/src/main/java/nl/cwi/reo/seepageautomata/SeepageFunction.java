@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import nl.cwi.reo.automata.Label;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class SeepageFunction implements Label<SeepageFunction> {
 	

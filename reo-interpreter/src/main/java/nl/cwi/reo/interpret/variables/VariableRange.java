@@ -9,9 +9,9 @@ import org.antlr.v4.runtime.Token;
 
 import nl.cwi.reo.interpret.integers.IntegerVariable;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.IntegerExpression;
-import nl.cwi.reo.semantics.api.IntegerValue;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.IntegerExpression;
+import nl.cwi.reo.semantics.expressions.IntegerValue;
 
 /**
  * An immutable parameterized set of variable names, such as, for example, 

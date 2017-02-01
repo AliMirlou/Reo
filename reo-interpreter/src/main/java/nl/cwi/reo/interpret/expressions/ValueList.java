@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.ValueExpression;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.AtomicExpression;
 
-public class ValueList extends ArrayList<ValueExpression> implements Expressions {
+public class ValueList extends ArrayList<AtomicExpression> implements Expressions {
 	
 	/**
 	 * Serial version ID.
@@ -17,10 +17,10 @@ public class ValueList extends ArrayList<ValueExpression> implements Expressions
 	
 	public ValueList() { }
 	
-	public ValueList(List<ValueExpression> entries) {
+	public ValueList(List<AtomicExpression> entries) {
 		if (entries == null)
 			throw new NullPointerException();
-		for (ValueExpression e : entries) {
+		for (AtomicExpression e : entries) {
 			if (e == null)
 				throw new NullPointerException();
 			super.add(e);
@@ -29,8 +29,8 @@ public class ValueList extends ArrayList<ValueExpression> implements Expressions
 
 	@Override
 	public Expressions evaluate(Map<String, Expression> params) {
-		List<ValueExpression> entries = new ArrayList<ValueExpression>();
-		for (ValueExpression e : this)
+		List<AtomicExpression> entries = new ArrayList<AtomicExpression>();
+		for (AtomicExpression e : this)
 			entries.add(e.evaluate(params));
 		return new ValueList(entries);
 	}
@@ -38,7 +38,7 @@ public class ValueList extends ArrayList<ValueExpression> implements Expressions
 	@Override
 	public String toString() {
 		String s = "<";
-		Iterator<ValueExpression> expr = this.iterator();
+		Iterator<AtomicExpression> expr = this.iterator();
 		while (expr.hasNext())
 			s += expr.next() + (expr.hasNext() ? ", " : "" );
 		return s + ">";

@@ -1,15 +1,16 @@
 package nl.cwi.reo.interpret.signatures;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.stringtemplate.v4.ST;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.interpret.variables.VariableList;
-import nl.cwi.reo.semantics.api.Evaluable;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class ParameterList extends ArrayList<Parameter> implements Evaluable<ParameterList> {
 	
@@ -45,12 +46,16 @@ public class ParameterList extends ArrayList<Parameter> implements Evaluable<Par
 		return new ParameterList(list_p);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		String s = "<";
-		Iterator<Parameter> x = this.iterator();
-		while (x.hasNext())
-			s += x.next() + (x.hasNext() ? "," : "");
-		return s + ">";
+		List<String> params = new ArrayList<String>();
+		for (Parameter p : this) 
+			params.add(p.toString());
+		ST st = new ST("<$params; separator=\", \"$>", '$', '$');
+		st.add("params", params);
+		return st.render();
 	}
 }

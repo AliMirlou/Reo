@@ -1,29 +1,83 @@
 package nl.cwi.reo.interpret.components;
 
 import java.util.Map;
+import java.util.Objects;
 
-import nl.cwi.reo.interpret.blocks.Block;
+import org.stringtemplate.v4.ST;
+
+import nl.cwi.reo.interpret.blocks.BlockExpression;
+import nl.cwi.reo.interpret.blocks.Body;
+import nl.cwi.reo.interpret.blocks.Instance;
+import nl.cwi.reo.interpret.blocks.Statement;
 import nl.cwi.reo.interpret.expressions.ValueList;
+import nl.cwi.reo.interpret.signatures.SignatureConcrete;
+import nl.cwi.reo.interpret.signatures.SignatureExpression;
 import nl.cwi.reo.interpret.variables.VariableList;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Semantics;
-import nl.cwi.reo.semantics.api.ValueExpression;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
 
-public interface ComponentDefinition<T extends Semantics<T>> extends ValueExpression {
+public class ComponentDefinition<T extends Semantics<T>> implements ComponentExpression<T> {
+	
+	private SignatureExpression sign;
+	
+	private BlockExpression<T> block;
+
+	public ComponentDefinition(SignatureExpression sign, BlockExpression<T> body) {
+		if (sign == null || body == null)
+			throw new NullPointerException();
+		this.sign = sign;
+		this.block = body;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ComponentExpression<T> evaluate(Map<String, Expression> params) {
+		return new ComponentDefinition<T>(sign, block.evaluate(params));
+	}
 
 	/**
-	 * Instantiates the parameters and nodes in the body of a component definition.
-	 * @param values	parameter values
-	 * @param iface		nodes in the interface
-	 * @return The instantiated body of this definition, or null
+	 * {@inheritDoc}
 	 */
-	public Block<T> instantiate(ValueList values, VariableList iface);
-
+	@Override
+	public Statement<T> instantiate(ValueList values, VariableList iface) {
+		SignatureConcrete v = sign.evaluate(values, iface);
+		BlockExpression<T> _body = block.evaluate(v.getDefinitions());
+		if (_body instanceof Body) 		
+			return ((Body<T>)_body).instantiate(v);
+		return new Instance<T>(this, values, iface);		
+	}
+	
 	/**
-	 * Substitutes (component) variables with (component) expressions.
-	 * @param param			collection of known assignments.
-	 * @return Component expression whose body is evaluated using known assignments.
-	 * @throws Exception 
+	 * {@inheritDoc}
 	 */
-	public ComponentDefinition<T> evaluate(Map<String, Expression> params);
+	@Override
+	public boolean equals(Object other) {
+	    if (other == null) return false;
+	    if (other == this) return true;
+	    if (!(other instanceof ComponentDefinition<?>)) return false;
+	    ComponentDefinition<?> p = (ComponentDefinition<?>)other;
+	   	return Objects.equals(this.sign, p.sign) && 
+	   			Objects.equals(this.block, p.block);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+	    return Objects.hash(this.sign, this.block);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		ST st = new ST("<sign> <block>");
+		st.add("sign", sign);
+		st.add("block", block);
+		return st.render();
+	}
 }

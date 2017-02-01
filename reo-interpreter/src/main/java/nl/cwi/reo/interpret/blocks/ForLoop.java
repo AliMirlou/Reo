@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.stringtemplate.v4.ST;
+
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.variables.Variable;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.IntegerExpression;
-import nl.cwi.reo.semantics.api.IntegerValue;
-import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.IntegerExpression;
+import nl.cwi.reo.semantics.expressions.IntegerValue;
 
 /**
  * A parameterized for loop of a set {link java.util.Set}&lt;{link nl.cwi.reo.parse.Component}&gt; of parameterized components.
  */
-public class ForLoop<T extends Semantics<T>> implements Block<T> {
+public class ForLoop<T extends Semantics<T>> implements Statement<T> {
 
 	/**
 	 * Name of the iterated parameter.
@@ -34,7 +36,7 @@ public class ForLoop<T extends Semantics<T>> implements Block<T> {
 	/**
 	 * Iterated subprogram definition.
 	 */
-	public Block<T> block;
+	public Statement<T> statement;
 
 	/**
 	 * Constructs a parameterized for loop. 
@@ -44,23 +46,22 @@ public class ForLoop<T extends Semantics<T>> implements Block<T> {
 	 * @param upper			expression defining the upper iteration bound
 	 * @param subprogram	iterated subprogram definition
 	 */
-	public ForLoop(Variable parameter, IntegerExpression lower, IntegerExpression upper, Block<T> body) {
-		if (parameter == null || lower == null || upper == null || body == null)
+	public ForLoop(Variable parameter, IntegerExpression lower, IntegerExpression upper, Statement<T> statement) {
+		if (parameter == null || lower == null || upper == null || statement == null)
 			throw new NullPointerException();
 		this.parameter = parameter;
 		this.lower = lower;
 		this.upper = upper;
-		this.block = body;
+		this.statement = statement;
 	}
 	
 	/**
 	 * Gets a {link nl.cwi.reo.ProgramInstance} for a particular parameter assignment.
 	 * @param parameters		parameter assignment
 	 * @return Program instance {link nl.cwi.reo.ProgramInstance} for this parameterized component
-	 * @throws Exception if the provided parameters do not match the signature of this program.
 	 */
 	@Override
-	public Block<T> evaluate(Map<String, Expression> params) throws CompilationException {
+	public Statement<T> evaluate(Map<String, Expression> params) {
 		
 		if (params.get(parameter.getName()) != null)
 			throw new CompilationException(parameter.getToken(), "Parameter " + parameter + " is already used.");
@@ -77,30 +78,38 @@ public class ForLoop<T extends Semantics<T>> implements Block<T> {
 			// Iterate to find all concrete components. 
 			boolean isProgram = true;
 			Definitions<T> defns = new Definitions<T>(params);
-			List<Block<T>> bodies = new ArrayList<Block<T>>();
-			List<Body<T>> progs = new ArrayList<Body<T>>();
+			List<Statement<T>> statements = new ArrayList<Statement<T>>();
+			List<Body<T>> bodies = new ArrayList<Body<T>>();
 			for (int i = a; i <= b; i++) {
 				defns.put(parameter.getName(), new IntegerValue(Integer.valueOf(i)));
-				Block<T> e = block.evaluate(defns);
-				bodies.add(e);
+				Statement<T> e = statement.evaluate(defns);
+				statements.add(e);
 				if (e instanceof Body) {
-					progs.add((Body<T>)e);
+					bodies.add((Body<T>)e);
 				} else {
 					isProgram = false;
 				}
 			}
 			
 			if (isProgram) 
-				return Body.compose("", progs).remove(parameter.getName());
+				return Body.compose("", bodies).remove(parameter.getName());
 			
-			return new BlockList<T>(bodies);
+			return new StatementList<T>(statements);
 		}
 		
-		return new ForLoop<T>(parameter, x, y, block.evaluate(params));
+		return new ForLoop<T>(parameter, x, y, statement.evaluate(params));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return "for " + parameter + "=" + lower + ".." + upper + block;
+		ST st = new ST("for <parameter>=<lower>..<upper> <block>");
+		st.add("parameter", parameter);
+		st.add("lower", lower);
+		st.add("upper", upper);
+		st.add("block", statement);
+		return st.render();
 	}
 }

@@ -1,7 +1,11 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 import java.util.List;
 import java.util.Map;
+
+import nl.cwi.reo.semantics.Evaluable;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.Semantics;
 
 /**
  * A SubComponent is a part of a Connector.

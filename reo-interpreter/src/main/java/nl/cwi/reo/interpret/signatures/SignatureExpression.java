@@ -12,9 +12,9 @@ import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.interpret.variables.VariableList;
 import nl.cwi.reo.interpret.variables.VariableRange;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Port;
-import nl.cwi.reo.semantics.api.ValueExpression;
+import nl.cwi.reo.semantics.Port;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.AtomicExpression;
 
 public final class SignatureExpression implements ParameterType {
 	
@@ -82,7 +82,7 @@ public final class SignatureExpression implements ParameterType {
 
 		// Find the assignment of parameters.
 		Iterator<Parameter> param = params.evaluate(definitions).iterator();
-		Iterator<ValueExpression> value = values.iterator();	
+		Iterator<AtomicExpression> value = values.iterator();	
 		
 		while (param.hasNext() && value.hasNext()) {
 			Parameter x = param.next();

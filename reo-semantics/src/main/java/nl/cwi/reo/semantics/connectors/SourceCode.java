@@ -1,4 +1,4 @@
-package nl.cwi.reo.semantics.api;
+package nl.cwi.reo.semantics.connectors;
 
 import java.io.File;
 
@@ -24,5 +24,10 @@ public final class SourceCode {
 
 	public String getCall() {
 		return call;
+	}
+
+	@Override
+	public String toString() {
+		return call + (file == null ? "" : " at " + file.getPath());
 	}
 }

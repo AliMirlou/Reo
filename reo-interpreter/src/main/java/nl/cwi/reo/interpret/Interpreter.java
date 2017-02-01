@@ -26,14 +26,15 @@ import nl.cwi.reo.errors.Message;
 import nl.cwi.reo.errors.MessageType;
 import nl.cwi.reo.errors.MyErrorListener;
 import nl.cwi.reo.interpret.blocks.Body;
-import nl.cwi.reo.interpret.components.ComponentAtom;
+import nl.cwi.reo.interpret.blocks.Statement;
+import nl.cwi.reo.interpret.components.ComponentDefinition;
 import nl.cwi.reo.interpret.expressions.ValueList;
 import nl.cwi.reo.interpret.listeners.Listener;
 import nl.cwi.reo.interpret.semantics.Definitions;
-import nl.cwi.reo.interpret.strings.StringValue;
-import nl.cwi.reo.semantics.api.Connector;
-import nl.cwi.reo.semantics.api.Expression;
-import nl.cwi.reo.semantics.api.Semantics;
+import nl.cwi.reo.semantics.Semantics;
+import nl.cwi.reo.semantics.connectors.Connector;
+import nl.cwi.reo.semantics.expressions.Expression;
+import nl.cwi.reo.semantics.expressions.StringValue;
 
 public class Interpreter<T extends Semantics<T>> {
 	
@@ -127,14 +128,16 @@ public class Interpreter<T extends Semantics<T>> {
 			
 			// Get the instance from the main component.		
 			Expression expr = definitions.get(name);		
-			if (expr instanceof ComponentAtom<?>) {				
-				ComponentAtom<T> main = (ComponentAtom<T>)expr;
+			if (expr instanceof ComponentDefinition) {				
+				ComponentDefinition<T> main = (ComponentDefinition<T>)expr;
 				ValueList values = new ValueList();
 				for (String x : params) 
 					values.add(new StringValue(x));				
-				Body<T> main_p = main.instantiate(values, null);				
-				Connector<T> connector = main_p.getConnector();				
-				return connector.insertNodes(true, false, instance);
+				Statement<T> main_stmt = main.instantiate(values, null);
+				if (main_stmt instanceof Body) {
+					Connector<T> connector = ((Body<T>)main_stmt).getConnector();				
+					return connector.insertNodes(true, false, instance);
+				}
 			}
 		} catch (IOException e) {
 			System.out.print(e.getMessage());

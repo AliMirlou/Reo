@@ -4,8 +4,8 @@ import java.util.Map;
 
 import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.variables.VariableExpression;
-import nl.cwi.reo.semantics.api.BooleanExpression;
-import nl.cwi.reo.semantics.api.Expression;
+import nl.cwi.reo.semantics.expressions.BooleanExpression;
+import nl.cwi.reo.semantics.expressions.Expression;
 
 public class BooleanVariable implements BooleanExpression {
 
