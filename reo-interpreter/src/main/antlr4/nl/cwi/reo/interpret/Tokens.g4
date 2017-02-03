@@ -1,15 +1,18 @@
 lexer grammar Tokens;
 
+LANG    : 'Java' ; 
+      //| 'C/C++' 
+      //| 'URL' ;
 LEQ     : '<=' ;
 LT      : '<' ;
 GEQ     : '>=' ;
 GT      : '>' ;
 FORALL  : 'A' ;
 EXISTS  : 'E' ;
-EQ      : '==' ;
+EQ      : '=' ;
 NEQ     : '!=' ;
-AND     : '&&' ;
-OR      : '||' ;
+AND     : '&' ;
+OR      : '|' ;
 IN      : '?' ;
 OUT     : '!' ;
 MIX     : ':' ;

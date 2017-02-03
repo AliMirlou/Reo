@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.stringtemplate.v4.ST;
 
-import nl.cwi.reo.errors.CompilationException;
 import nl.cwi.reo.interpret.semantics.Definitions;
 import nl.cwi.reo.interpret.variables.Variable;
 import nl.cwi.reo.semantics.Semantics;
@@ -63,9 +62,6 @@ public class ForLoop<T extends Semantics<T>> implements Statement<T> {
 	@Override
 	public Statement<T> evaluate(Map<String, Expression> params) {
 		
-		if (params.get(parameter.getName()) != null)
-			throw new CompilationException(parameter.getToken(), "Parameter " + parameter + " is already used.");
-		
 		IntegerExpression x = lower.evaluate(params);
 		IntegerExpression y = upper.evaluate(params);
 		
@@ -92,7 +88,7 @@ public class ForLoop<T extends Semantics<T>> implements Statement<T> {
 			}
 			
 			if (isProgram) 
-				return Body.compose("", bodies).remove(parameter.getName());
+				return Body.compose("", bodies);
 			
 			return new StatementList<T>(statements);
 		}

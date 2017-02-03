@@ -95,17 +95,6 @@ public final class Body<T extends Semantics<T>> implements BlockExpression<T> {
 	}
 	
 	/**
-	 * Removes the assignment of a given variable from the definitions in this body.
-	 * @param x		name of the variable.
-	 * @return This body without a definition for x.
-	 */
-	public Body<T> remove(String x) {
-		Definitions<T> defs = new Definitions<T>(definitions);
-		defs.remove(x);
-		return new Body<T>(defs, connector);
-	}
-	
-	/**
 	 * Composes a set of bodies into a single body.
 	 * @param progs		set of component instances
 	 */
